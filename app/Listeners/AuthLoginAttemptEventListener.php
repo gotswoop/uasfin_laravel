@@ -12,12 +12,13 @@ use Illuminate\Auth\Events\Attempting;
 use GuzzleHttp;
 use Carbon\Carbon;
 
-use App\Library\Yodlee\YodleeUser;
+use App\Library\Yodlee\User as YodleeUser;
 
 class AuthLoginAttemptEventListener
 {
 
-    protected $user;
+    protected $user; // object
+    protected $yodleeUser;  // object
 
     /**
      * Create the event listener.

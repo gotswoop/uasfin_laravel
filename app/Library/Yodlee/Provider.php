@@ -36,7 +36,37 @@ class Provider {
 		}
 	}
 
-  	public function parseAndPopulateProviderDetails($provider,$field_value_0,$field_value_1) {
+	public function refreshProvider($providerId) 
+	{
+
+		// SWOOP - Clean input ($providerId)
+		$request = config('services.yodlee.refreshUrl'). '/' .$providerId;
+
+		$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
+		
+		if ( $responseObj['httpStatus'] == '200' ) {
+			return $responseObj['body'];
+		} else {
+			dd($responseObj['error']);
+		}
+    }
+
+	public function refreshAllProviders() // NOT USED YET
+	{
+
+		$request = config('services.yodlee.refreshUrl'). '/' .$providerId;
+
+		$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
+
+		if ( $responseObj['httpStatus'] == '200' ) {
+			return $responseObj['body'];
+		} else {
+			dd($responseObj['error']);
+		}
+    }
+
+
+ 	public function parseAndPopulateProviderDetails($provider,$field_value_0,$field_value_1) {
 		$resObj = Utils::parseJson($provider);
 		$providerObj = $resObj['provider'];
 		$loginForm = $providerObj[0]['loginForm'];	
@@ -125,12 +155,6 @@ class Provider {
 		return $responseArr['providerAccountId'];
 		// write the code to parse and get accountId, same will be used for refreshStatus...
 
-	}
-
-	function getRefreshStatus($url,$cobSession,$userSession,$accountId) {
-		$provd = new Provider();
-		$response = $provd->getRefreshStatus($url,$cobSession,$userSession,$accountId);
-		return $response['body'];
 	}
 
 }

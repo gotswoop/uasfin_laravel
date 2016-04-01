@@ -6,7 +6,36 @@ use Auth;
 
 class Account {
 
-	public function getDetails($accountId) 
+	public function getNetWorth() // NOT IN USE
+	{
+
+		$request = config('services.yodlee.netWorthUrl').'?accoundIds=10050740';
+
+		$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
+
+		if ( $responseObj['httpStatus'] == '200' ) {
+			return $responseObj['body'];
+		} else {
+			dd($responseObj['error']);
+		}
+    }
+
+	public function getSummary($accountId, $container) 
+	{
+
+		// SWOOP: Clean input ($accoundId)
+		$request = config('services.yodlee.accounts.url'). '/' . $accountId.'?container='.$container;
+
+		$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
+
+		if ( $responseObj['httpStatus'] == '200' ) {
+			return $responseObj['body'];
+		} else {
+			dd($responseObj['error']);
+		}
+    }
+
+    public function getTransactions($accountId) 
 	{
 
 		// SWOOP: Clean input ($accoundId)
@@ -21,6 +50,9 @@ class Account {
 		}
     }
 
+    /**
+     * Get all accounts that belong to a user
+     */
 	public function getAllAccounts() 
 	{
 

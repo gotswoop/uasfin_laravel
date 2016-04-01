@@ -36,11 +36,25 @@ class AccountController extends Controller
      */
     public function dashboard()
     {
+		
 		$dashboard = $this->account->getAllAccounts();
 
-        // SWOOP: What if there are no account in dashboard. Show add account.
+		// $netWorth = $this->account->getNetWorth(); // Not used
+		$netWorth['assets'] = 0;
+		$netWorth['liabilities'] = 0;
+		foreach ($dashboard['account'] as $account) {
+			if ($account['isAsset']) {
+				$netWorth['assets'] = $netWorth['assets'] + $account['balance']['amount'];
+			} else {
+				$netWorth['liabilities'] = $netWorth['liabilities'] + $account['balance']['amount'];
+
+			}
+		}
+		$netWorth['total'] = $netWorth['assets'] - $netWorth['liabilities'];
+		
+		// SWOOP: What if there are no account in dashboard. Show add account.
         if (isset($dashboard['account'])) {
-	        return view('account.dashboard')->with('accounts', $dashboard['account']);
+	        return view('account.dashboard')->with(array('accounts' => $dashboard['account'], 'netWorth' => $netWorth));
         } else {
         	return \Redirect::to('account/search');
         }
@@ -51,12 +65,21 @@ class AccountController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function details($id = null)
+    public function details(Request $request, $id = null)
     {
-     	$accountDetails = $this->account->getDetails($id);
-		return view('account.details')->with('transactions', $accountDetails['transaction']);
-        // SWOOP: What if body is empty
-    }
+
+    	$container = $request->input('container');
+    	
+     	$accountSummary = $this->account->getSummary($id, $container);
+ 	
+     	$accountDetails = $this->account->getTransactions($id);
+     	
+     	if (isset($accountDetails['transaction'])) {
+	        return view('account.details')->with(array('transactions' => $accountDetails['transaction'], 'summary' => $accountSummary['account'][0]));
+        } else {
+        	return view('account.details')->with(array('transactions' => null, 'summary' => $accountSummary['account'][0]));
+        }
+	}
 
     /**
      * Add an account.
@@ -133,6 +156,29 @@ class AccountController extends Controller
 
     	return view('account.add')->with('providerDetails', $provider);
     	
+    }
+
+    /**
+     * Refresh a specific provider or all providers that belong to a user
+     */
+    public function refresh(Request $request, $providerId = null)
+    {
+
+    	if ($providerId) {
+
+    		$this->provider->refreshProvider($providerId);
+    		// SWOOP: Splash "SUCCESS" before redirecting
+    		return \Redirect::to('account/dashboard');
+
+    	} else {
+
+			// get all account belonging to user
+			// refresh them and redirect them to dashboard
+    		return \Redirect::to('account/dashboard');
+
+    	}
+    	
+
     }
 
 }

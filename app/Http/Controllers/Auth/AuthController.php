@@ -15,7 +15,7 @@ use Carbon\Carbon;
 use Request;
 
 use App\Library\Yodlee\Cobrand;
-use App\Library\Yodlee\YodleeUser;
+use App\Library\Yodlee\User as YodleeUser;
 
 class AuthController extends Controller
 {
@@ -92,6 +92,7 @@ class AuthController extends Controller
     		'lastName.required' => 'Pleaes provide a last name.',
     		'email.required' => 'Please provide a valid email.',
     		'password.regex' => 'Password must be at least 8 characters long and contain at least one upper case letter, one number and any of these special characters !@#$%^&*() and cannot contain ] and .',
+    		'invite_code.regex' => 'Please enter a valid invitation code',
    		];
    		
     	$rules = [
@@ -104,6 +105,7 @@ class AuthController extends Controller
     			'regex:/^.*(?!.*(\]|\.))(?=.*[a-zA-Z])(?=.*[0-9])(?=.*[!@#$()%^&*]).*$/',
     			'confirmed'
     		),
+    		'invite_code' => array('required', 'regex:/^CESR$/'),
         ];
 
     	return Validator::make($data, $rules, $messages);

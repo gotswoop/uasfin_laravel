@@ -4,7 +4,7 @@ namespace App\Library\Yodlee;
 
 use Auth;
 
-class YodleeUser {
+class User {
 
 	public function register($data, $cobrandSessionToken) 
 	{
@@ -50,18 +50,31 @@ class YodleeUser {
 		if ( $responseObj['httpStatus'] == '200' ) {
 			return $responseObj['body'];
 		} else {
-			// dd($responseObj['error']); SWOOP
-			return;
-		}       
+			/*
+			SWOOP: Throws an error when a user is not in Yodlee. Let the local DB handle this for now. 
+			"code" => "Y002"
+  			"message" => "Invalid loginName/password"
+  			*/
+  			// dd($responseObj['error']); 
+  			return false;
+		}   
+
+		return false;
 
     }
 
-    public function logout()
+    public function logout($cobrandSessionToken, $userSessionToken)
     {
 
+    	$request = config('services.yodlee.user.logoutUrl');
 
-
-
+		$responseObj = Utils::httpPost($request, null, $cobrandSessionToken, $userSessionToken);
+		
+		if ( $responseObj['httpStatus'] == '204' ) {
+			return true;
+		} else {
+			dd($responseObj['error']);
+		}
     }
 
 }

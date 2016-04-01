@@ -13,19 +13,23 @@ use GuzzleHttp;
 use Carbon\Carbon;
 use Auth;
 
+use App\Library\Yodlee\User as YodleeUser;
+
 class AuthLogoutEventListener
 {
 
     protected $user;
+    protected $yodleeUser;
 
     /**
      * Create the event listener.
      *
      * @return void
      */
-    public function __construct(User $user)
+    public function __construct(User $user, YodleeUser $yodleeUser)
     {
-        $this->user = $user; // SWOOP
+        $this->user = $user;
+        $this->yodleeUser = $yodleeUser;
     }
 
     /**
@@ -40,14 +44,10 @@ class AuthLogoutEventListener
     {
 
         if(Auth::check()) {
-            $client = new GuzzleHttp\Client(['http_errors' => false]);
-            
-            $auth = '{cobSession='.Auth::user()->yslCobrandSessionToken .', userSession='.Auth::user()->yslUserSessionToken.'}';
-            $res = $client->request('POST', config('services.yodlee.user.logoutUrl'), [
-                'headers' => [ 'Authorization' => $auth ],
-            ]);
 
-            if ($res->getStatusCode() == "204") {
+        	$res = $this->yodleeUser->logout(Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
+        	
+        	if ($res) {
                 $userToUpdate = $this->user->where('email', '=', $user->user->email)->first();
                 $userToUpdate->update([
                     'yslUserSessionToken' => null,

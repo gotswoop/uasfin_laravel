@@ -45,12 +45,15 @@ Route::group(['middleware' => 'web'], function () {
 
 	Route::post('/account/search', 'AccountController@searchResults');
 
+	Route::get('/account/refresh/{id?}', 'AccountController@refresh');
+
 	Route::get('/account/add/{id}', 'AccountController@add');
 
 	Route::post('/account/add/{id}', 'AccountController@addSubmit');
 	
 	Route::get('/account/{id}', 'AccountController@details');
 	
+
 	/*
 	Route::get('/contact', 'PagesController@contact');
 
