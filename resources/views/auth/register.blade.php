@@ -84,7 +84,7 @@
                             <label class="col-md-4 control-label">Invitation Code</label>
 
                             <div class="col-md-6">
-                                <input type="invite_code" class="form-control" name="invite_code">
+                                <input type="text" class="form-control" name="invite_code">
 
                                 @if ($errors->has('invite_code'))
                                     <span class="help-block">
