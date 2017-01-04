@@ -4,6 +4,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
+            <div style="text-align:center;"><p>Already have an account? Click <a href="/login"><strong>here</strong></a> to Login.</p></div>
             <div class="panel panel-default">
                 <div class="panel-heading">Register</div>
                 <div class="panel-body">
@@ -84,7 +85,7 @@
                             <label class="col-md-4 control-label">Invitation Code</label>
 
                             <div class="col-md-6">
-                                <input type="invite_code" class="form-control" name="invite_code">
+                                <input type="text" class="form-control" name="invite_code" value="{{ app('request')->input('token') }}">
 
                                 @if ($errors->has('invite_code'))
                                     <span class="help-block">
@@ -97,13 +98,21 @@
                         <div class="form-group">
                             <div class="col-md-6 col-md-offset-4">
                                 <button type="submit" class="btn btn-primary">
-                                    <i class="fa fa-btn fa-user"></i>Register
+                                    <i class="fa fa-btn fa-user"></i>Sign Up
                                 </button>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
+            <div class="alert alert-warning">Password requirements:
+				<ul>
+					<li>At least 8 characters long</li>
+					<li>Contain at least one upper case letter and one number</li>
+					<li>Contain any of these special characters ! @ # $ % ^ & * ( ) </li>
+					<li>Cannot contain ] and .</li>
+				</ul>
+			</div>
         </div>
     </div>
 </div>

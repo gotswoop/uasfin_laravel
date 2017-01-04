@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<?php //dd($summary); ?>
 <div class="container">
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
@@ -19,7 +20,7 @@
 						{{ $neg }} {{ number_format($summary['balance']['amount'],2) }} ({{ $summary['balance']['currency'] }})
 					@endif	
                 	</h4>
-                	<h5>Account Type: {{ $summary['accountType']}} </h5>
+                	<h5>Type: {{ $summary['accountType']}} </h5>
                 	<h5>Pending and Cleared Transactions (updated {{ \Carbon\Carbon::createFromTimeStamp(strtotime($summary['lastUpdated']))->diffForHumans() }})</h5>
                 </div>
 	            <div class="panel-body">
@@ -36,10 +37,10 @@
 	                    		<tr>
 	                    		<td> {{ mb_strtolower($transaction['status']) }} </td>
 	                    		<td> {{ $transaction['date'] }} </td>
-	                    		<td> <a href="#"> {{ $transaction['description']['original'] }} </a> </td>
-								<td> <a href="#">{{ $transaction['category'] }} </a> </td>
+	                    		<td> {{ $transaction['description']['original'] }} </td>
+								<td> {{ $transaction['category'] }} </td>
 								{{--*/ $color = ($transaction['baseType'] == 'CREDIT') ? 'green' : 'red' /*--}}
-								{{--*/ $neg = ($transaction['baseType'] == 'CREDIT') ? '-' : '' /*--}}
+								{{--*/ $neg = ($transaction['baseType'] == 'CREDIT') ? '' : '-' /*--}}
 								<td style="font-weight: bold; color: {{ $color }}">
 								@if ($transaction['amount']['currency'] == 'USD')
 									 {{ $neg }}$ {{ number_format($transaction['amount']['amount'],2) }}

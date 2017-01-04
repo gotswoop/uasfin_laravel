@@ -54,7 +54,7 @@ class AuthLogoutEventListener
                     'yslUserSessionToken_date' => null,
                 ]);
             }
-        }
+	    }
 
         return true;
     }

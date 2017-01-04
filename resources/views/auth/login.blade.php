@@ -4,6 +4,7 @@
 <div class="container">
     <div class="row">
         <div class="col-md-8 col-md-offset-2">
+        	<div style="text-align:center;"><p>Don't have an account? Click <a href="/register"><strong>here</strong></a> to Sign Up.</p></div>
             <div class="panel panel-default">
                 <div class="panel-heading">Login</div>
                 <div class="panel-body">
@@ -54,13 +55,19 @@
                                     <i class="fa fa-btn fa-sign-in"></i>Login
                                 </button>
 
-                                <a class="btn btn-link" href="{{ url('/password/reset') }}">Forgot Your Password?</a>
+                                <!-- <a class="btn btn-link" href="{{ url('/password/reset') }}">Forgot Your Password?</a>-->
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
-        </div>
-    </div>
+            @if ( !empty($notification) )
+	        	<div class="alert alert-danger">
+		        	<span> {{ $notification }} </span>
+				</div>
+	        @endif
+	    </div>
+	</div>
+    <div align="center">Problems logging in? Please contact the helpdesk at 1-855-872-8673 (9am - 5pm PST) or by email: <a href="mailto:uashelp@usc.edu?subject=[via%20uasfin.usc.edu%20-%20Yodlee]">uashelp@usc.edu</a>.</div>
 </div>
 @endsection

@@ -39,43 +39,32 @@ Route::group(['middleware' => 'web'], function () {
 
     Route::get('/', 'PagesController@home');
 
-	Route::get('/account/dashboard', 'AccountController@dashboard');
+    Route::get('/account/dashboard', 'AccountController@dashboard');
+
+	Route::get('/account/link', 'AccountController@link');
 
 	Route::get('/account/search', 'AccountController@search');
 
 	Route::post('/account/search', 'AccountController@searchResults');
 
-	Route::get('/account/refresh/{id?}', 'AccountController@refresh');
+	Route::get('/account/status/{id?}', 'AccountController@checkStatus');
 
-	Route::get('/account/add/{id}', 'AccountController@add');
+	Route::get('/account/remove/{id}', 'AccountController@removeProvider');
+
+	// Route::get('/account/refresh/{id?}', 'AccountController@refresh');
+
+	// Route::get('/refresh/{id}', 'AccountController@refresh');
+
+	Route::get('/account/add/{id}', 'AccountController@addForm');
 
 	Route::post('/account/add/{id}', 'AccountController@addSubmit');
 	
 	Route::get('/account/{id}', 'AccountController@details');
-	
 
-	/*
+	Route::get('/notify', 'PagesController@notify');
+
 	Route::get('/contact', 'PagesController@contact');
 
-	/profile - show profile
-	/profile/update - update profile
-	
-	/accounts/update - accou
-
-	/dashboard
-	/dashboard/update - updates the accounts
-
-	/accounts
-	/accounts/add
-
-	
-	/login
-	/register
-	/
-
-
-
-	*/
 	/*
     // Named Routes
 	Route::get('/post/{post}', [ 

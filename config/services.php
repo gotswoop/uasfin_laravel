@@ -47,6 +47,7 @@ return [
             'loginUrl' => env('YODLEE_BASE_URL') . env('YODLEE_COB_LOGIN_URL'),
             'logoutUrl' => env('YODLEE_BASE_URL') . env('YODLEE_COB_LOGOUT_URL'),
             'sessionToken' => env('YODLEE_COBRAND_SESSION_TOKEN'),
+            'publicKeyUrl' => env('YODLEE_BASE_URL') . env('YODLEE_COB_KEY_URL'),
         ],
         'user' => [
             'loginUrl' => env('YODLEE_BASE_URL') . env('YODLEE_USER_LOGIN_URL'),
@@ -69,10 +70,18 @@ return [
         'accounts' => [
         	'url' => env('YODLEE_BASE_URL') . env('YODLEE_GET_ACCOUNTS_URL'),
         ],
+        'providerAccounts' => [
+        	'url' => env('YODLEE_BASE_URL') . env('YODLEE_PROVIDER_ACCOUNTS_URL'),
+        ],
     ],  
 ];
 
 /*
+# DEV
+# YODLEE_BASE_URL=https://stage.api.yodlee.com/ysl/private-sandbox89/v1/
+# YODLEE_COBRAND_LOGIN=sandbox89
+# YODLEE_COBRAND_PASSWORD=Yodlee@123
+
 YODLEE_COBRAND_SESSION_TOKEN=YODLEE_COBRAND_SESSION_TOKEN_NOT_SET
 
 # LIVE
@@ -107,5 +116,7 @@ YODLEE_USER_NETWORTH=derived/networth
 YODLEE_USER_CURRENCY_PREFERENCE=USD
 YODLEE_USER_TIMEZONE_PREFERENCE=PST
 YODLEE_USER_DATEFORMAT_PREFERENCE=MM/DD/YYYY
+
+YODLEE_PROVIDER_ACCOUNTS_URL=providers
 
 */

@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <title>404</title>
+        <title>YSL Error.</title>
 
         <link href="https://fonts.googleapis.com/css?family=Lato:100" rel="stylesheet" type="text/css">
-
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet">
+    
         <style>
             html, body {
                 height: 100%;
@@ -33,6 +34,11 @@
 
             .title {
                 font-size: 42px;
+                margin-bottom: 20px;
+            }
+
+            .details {
+                font-size: 32px;
                 margin-bottom: 40px;
             }
         </style>
@@ -40,7 +46,11 @@
     <body>
         <div class="container">
             <div class="content">
-                <div class="title">Sorry the page you are looking for does not exist or has moved.</div>
+                <div class="title">We're Sorry. Something went wrong.</div>
+                <div class="details">
+	                <p>Details: {{ $exception->getMessage() }}</p>
+					<p>Please go <a class="btn btn-info" href="{!! URL::previous() !!}">Back</a> or <a class="btn btn-info" href="/contact">Report Issue</a></p>
+                </div>
             </div>
         </div>
     </body>

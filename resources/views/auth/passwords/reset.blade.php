@@ -64,7 +64,16 @@
                     </form>
                 </div>
             </div>
+            <div class="alert alert-warning">Password requirements:
+				<ul>
+					<li>At least 8 characters long</li>
+					<li>Contain at least one upper case letter and one number</li>
+					<li>Contain any of these special characters ! @ # $ % ^ & * ( ) </li>
+					<li>Cannot contain ] and .</li>
+				</ul>
+			</div>
         </div>
     </div>
+    <div align="center">Problems resetting password? Please contact the helpdesk at 1-855-872-8673 (9am - 5pm PST) or by email: <a href="mailto:uashelp@usc.edu?subject=[via%20uasfin.usc.edu%20-%20Yodlee]">uashelp@usc.edu</a>.</div>
 </div>
 @endsection

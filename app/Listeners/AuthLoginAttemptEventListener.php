@@ -42,6 +42,7 @@ class AuthLoginAttemptEventListener
     public function handle(Attempting $login)
     {
 
+    	// SWOOP - get the cobrand id from someplace else . like a database
         $cobrandSessionToken = config('services.yodlee.cobrand.sessionToken');
 
         // Getting user entered credentials

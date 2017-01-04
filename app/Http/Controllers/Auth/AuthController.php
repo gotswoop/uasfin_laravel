@@ -53,7 +53,7 @@ class AuthController extends Controller
 
         $this->yodleeUser = $yodleeUser;
 
-        // login cobrand here
+        // login the Cobrand here
 		$cobrand = $cobrand->login();
 		
 		\Config::set('services.yodlee.cobrand.sessionToken', $cobrand['session']['cobSession']);
@@ -88,8 +88,8 @@ class AuthController extends Controller
     	*/
 
 		$messages = [
-    		'firstName.required' => 'Pleaes provide a first name.',
-    		'lastName.required' => 'Pleaes provide a last name.',
+    		'firstName.required' => 'Please provide a first name.',
+    		'lastName.required' => 'Please provide a last name.',
     		'email.required' => 'Please provide a valid email.',
     		'password.regex' => 'Password must be at least 8 characters long and contain at least one upper case letter, one number and any of these special characters !@#$%^&*() and cannot contain ] and .',
     		'invite_code.regex' => 'Please enter a valid invitation code',
@@ -126,24 +126,69 @@ class AuthController extends Controller
     		$res = $this->yodleeUser->register($data, $this->cobrandSessionToken);
 
     		// Saving yodlee cobrandSessionToken, userSessionToken and UserSessionToken create time to users table.
-                    
+            
+    		$iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
             return User::create([
+            	'panelId' => $data['panelId'],
+            	'treatment' => $data['treatment'],
                 'firstName' => $data['firstName'],
                 'lastName' => $data['lastName'],
                 'email' => $data['email'],
                 'password' => bcrypt($data['password']),
-                'suddi' => $data['password'],
+                'suddi' => base64_encode(openssl_encrypt($data['password'], 'aes-256-cbc', $data['email'], 0, $iv)).':'.base64_encode($iv),
                 'join_date' => Carbon::now()->toDateTimeString(),
                 'last_login_date' => Carbon::now()->toDateTimeString(),
                 'regIP' => Request::ip(),
+                'access' => 1,
                 'yslUserId' => $res['user']['id'],
                 'yslUserSessionToken' => $res['user']['session']['userSession'],
                 'yslCobrandSessionToken' => $this->cobrandSessionToken,
                 'yslUserSessionToken_date' => Carbon::now()->toDateTimeString(),
             ]);
         }
+
         // return to login register page
         view('auth.register'); // cannot do this . Move all to validation?
         
+    }
+
+    // AOXOMOXOA: Overriding trait use Illuminate\Foundation\Auth\AuthenticatesUsers
+    /**
+     * Handle a login request to the application.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function login(\Illuminate\Http\Request $request)
+    {
+        $this->validateLogin($request);
+
+        // If the class is using the ThrottlesLogins trait, we can automatically throttle
+        // the login attempts for this application. We'll key this by the username and
+        // the IP address of the client making these requests into this application.
+        $throttles = $this->isUsingThrottlesLoginsTrait();
+
+        if ($throttles && $lockedOut = $this->hasTooManyLoginAttempts($request)) {
+            $this->fireLockoutEvent($request);
+
+            return $this->sendLockoutResponse($request);
+        }
+
+        $credentials = $this->getCredentials($request);
+        // AOXOMOXOA - This only allows users with access = 1 to login
+        $credentials['access'] = 1;
+
+        if (\Auth::guard($this->getGuard())->attempt($credentials, $request->has('remember'))) {
+            return $this->handleUserWasAuthenticated($request, $throttles);
+        }
+
+        // If the login attempt was unsuccessful we will increment the number of attempts
+        // to login and redirect the user back to the login form. Of course, when this
+        // user surpasses their maximum number of attempts they will get locked out.
+        if ($throttles && ! $lockedOut) {
+            $this->incrementLoginAttempts($request);
+        }
+
+        return $this->sendFailedLoginResponse($request);
     }
 }

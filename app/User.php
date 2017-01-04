@@ -12,9 +12,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'firstName', 'lastName', 'email', 'password', 'suddi', 'join_date', 'last_login_date', 
-        'regIP', 'salt', 'communication', 'usertype', 'access', 'settings', 
-        'yslUserId', 'yslUserSessionToken', 'yslCobrandSessionToken', 'yslUserSessionToken_date',
+        'panelId', 'treatment', 'firstName', 'lastName', 'email', 'password', 'suddi', 'join_date', 'last_login_date', 'regIP', 'salt', 'communication', 'usertype', 'access', 'settings', 'yslUserId', 'yslUserSessionToken', 'yslCobrandSessionToken', 'yslUserSessionToken_date',
     ];
 
     /**
