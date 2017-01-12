@@ -95,6 +95,11 @@
                             </div>
                         </div>
 
+                        {{-- Fetching user's treatment and panelId from UAS 35 --}}
+                        {{-- http://uasfin.usc.edu/register?token=CESR&id=81&t=2 --}}
+                        <input type="hidden" name="treatment" value="{{ app('request')->input('t') }}">
+                        <input type="hidden" name="panelId" value="{{ app('request')->input('id') }}">
+
                         <div class="form-group">
                             <div class="col-md-6 col-md-offset-4">
                                 <button type="submit" class="btn btn-primary">
@@ -115,5 +120,6 @@
 			</div>
         </div>
     </div>
+    <div align="center">Problems creating an account? Please contact the helpdesk at 1-855-872-8673 (9am - 5pm PST) or by email: <a href="mailto:uashelp@usc.edu?subject=[via%20uasfin.usc.edu%20-%20Yodlee]">uashelp@usc.edu</a>.</div>
 </div>
 @endsection

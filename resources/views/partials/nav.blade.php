@@ -41,19 +41,9 @@
                 		<li><a href="{{ url('/') }}"><button type="button" class="btn btn-primary btn-md">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Home&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</button></a></li>
                 	@endif
                 @else
-                    <li><a href="{{ url('/account/dashboard') }}"><button type="button" class="btn btn-primary btn-md">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;My Dashboard&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</button></a></li>
-                    <li><a href="{{ url('/logout') }}"><button type="button" class="btn btn-primary btn-md">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ Auth::user()->firstName .' '.Auth::user()->lastName }} (Logout)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</button></a></li>
-                    <!--
-                    <li class="dropdown">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-                            {{ Auth::user()->firstName .' '.Auth::user()->lastName }} <span class="caret"></span>
-                        </a>
-
-                        <ul class="dropdown-menu" role="menu">
-                            <li><a href="{{ url('/logout') }}"><i class="fa fa-btn fa-sign-out"></i>Logout</a></li>
-                        </ul>
-                    </li>
-                    -->
+                	<li><a href="{{ url('/account/dashboard') }}"><button type="button" class="btn btn-primary btn-md">&nbsp;Dashboard&nbsp;</button></a></li>
+                    <li><a href="{{ url('/contact') }}"><button type="button" class="btn btn-primary btn-md">&nbsp;Report Issue&nbsp;</button></a></li>
+                    <li><a href="{{ url('/logout') }}"><button type="button" class="btn btn-primary btn-md">&nbsp;{{ substr(Auth::user()->firstName, 0, 1) .' '.Auth::user()->lastName }} (Logout)&nbsp;</button></a></li>
                 @endif
         	</ul>
     	</div>

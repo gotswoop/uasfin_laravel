@@ -9,7 +9,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 // SWOOP
 use App\User;
 use Illuminate\Auth\Events\Attempting;
-use GuzzleHttp;
 use Carbon\Carbon;
 
 use App\Library\Yodlee\User as YodleeUser;

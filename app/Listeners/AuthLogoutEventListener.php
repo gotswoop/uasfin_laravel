@@ -9,7 +9,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 // SWOOP
 use App\User;
 use Illuminate\Auth\Events\Logout;
-use GuzzleHttp;
 use Carbon\Carbon;
 use Auth;
 

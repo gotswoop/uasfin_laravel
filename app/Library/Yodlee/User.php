@@ -101,20 +101,17 @@ class User {
 
 		$responseObj = Utils::httpGet($request, $cobrandSessionToken, $userSessionToken);
 
-		if ( $responseObj['httpStatus'] != '200' ) {
+		if ( $responseObj['httpStatus'] == '200' ) {
 
-			return false;
+			return true;
 
 		}
 
-		return true;
+		return false;
     }
-
-
 
     public function logout($cobrandSessionToken, $userSessionToken)
     {
-
     	// Checking if YSL User session is still active
     	if ( $this->isActive($cobrandSessionToken, $userSessionToken) ) {
 

@@ -1,7 +1,5 @@
 <?php
 
-// SWOOP
-
 namespace App\Http\Controllers\Auth;
 
 use App\User;
@@ -10,7 +8,6 @@ use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\ThrottlesLogins;
 use Illuminate\Foundation\Auth\AuthenticatesAndRegistersUsers;
 
-use GuzzleHttp;
 use Carbon\Carbon;
 use Request;
 
@@ -54,11 +51,12 @@ class AuthController extends Controller
         $this->yodleeUser = $yodleeUser;
 
         // login the Cobrand here
-		$cobrand = $cobrand->login();
+		$cobSession = $cobrand->login();
 		
-		\Config::set('services.yodlee.cobrand.sessionToken', $cobrand['session']['cobSession']);
-
-		$this->cobrandSessionToken = $cobrand['session']['cobSession'];
+		// \Config::set('services.yodlee.cobrand.sessionToken', $cobrand['session']['cobSession']);
+		// $this->cobrandSessionToken = $cobrand['session']['cobSession'];
+		\Config::set('services.yodlee.cobrand.sessionToken', $cobSession);
+		$this->cobrandSessionToken = $cobSession;
     }
 
 	/*
@@ -126,7 +124,6 @@ class AuthController extends Controller
     		$res = $this->yodleeUser->register($data, $this->cobrandSessionToken);
 
     		// Saving yodlee cobrandSessionToken, userSessionToken and UserSessionToken create time to users table.
-            
     		$iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
             return User::create([
             	'panelId' => $data['panelId'],

@@ -34,8 +34,9 @@ class Utils {
 		*/
 
 		$res = $client->request('GET', $requestUrl, [
-	        'headers' => [ 'Authorization' => $auth ],
-	    ]);
+			'headers' => [ 'Authorization' => $auth ],
+			'version' => 1.0,
+		]);
 
 	    $response = self::parseResponse($res);
 
@@ -58,12 +59,19 @@ class Utils {
 
 		$res = $client->request('POST', $requestUrl , [
 			'headers' => [ 'Authorization' => $auth ],
-            'form_params' => $params,
-        ]);
+			'form_params' => $params,
+			'version' => 1.0,
+		]);
+
+		/*
+		$res = $client->request('POST', $requestUrl , [
+			'headers' => [ 'Authorization' => $auth, 'Content-type' => 'application/json'],
+			'form_params' => $params,
+		]);
+		*/
 
         return self::parseResponse($res);
 	}
-
 
 	static function httpDelete ( $requestUrl, $params, $cobrandSession, $userSession ) 
 	{
@@ -80,33 +88,12 @@ class Utils {
 
 		$res = $client->request('DELETE', $requestUrl , [
 			'headers' => [ 'Authorization' => $auth ],
-            'form_params' => $params,
-        ]);
+			'form_params' => $params,
+			'version' => 1.0,
+		]);
 
         return self::parseResponse($res);
 	}
-
-	static function httpPost1 ( $requestUrl, $params, $cobrandSession, $userSession ) 
-	{
-
-		$client = new GuzzleHttp\Client(['http_errors' => false]);
-	        
-		$auth = null;
-		if (!empty($cobrandSession)) {
-		   $auth = '{cobSession='.$cobrandSession.'}';
-		}
-		if (!empty($cobrandSession) && !empty($userSession)) {
-		   $auth = '{cobSession='.$cobrandSession.', userSession='.$userSession.'}';
-		}
-
-		$res = $client->request('POST', $requestUrl , [
-			'headers' => [ 'Authorization' => $auth, 'Content-type' => 'application/json'],
-            'form_params' => $params,
-        ]);
-
-        return self::parseResponse($res);
-	}
-
 
 	static function parseResponse ( $res ) {
 

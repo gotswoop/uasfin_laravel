@@ -28,13 +28,6 @@ class PagesController extends Controller
 		}
 	}
 
-	public function notify ()
-	{
-		return view('pages.notify');
-	}	
 	
-	public function contact ()
-	{
-		return view('pages.contact');
-	}
+
 }

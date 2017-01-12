@@ -5,6 +5,8 @@ namespace App\Library\Yodlee;
 use Auth;
 use Carbon\Carbon;
 
+use App\Cobrand as CobrandModel;
+
 class Cobrand {
 
 	/**
@@ -16,40 +18,59 @@ class Cobrand {
 	public function login() 
 	{
 
-		// Fetch cobrand URL from env file
-		$requestUrl = config('services.yodlee.cobrand.loginUrl');
-          
-        // Fetch cobrand credentials from env file
-        $params = array(
-        	'cobrandLogin' => config('services.yodlee.cobrand.login'), 
-        	'cobrandPassword' => config('services.yodlee.cobrand.password')
-        );
+		// Checking if cobrand is active (70 mins)
+		$cob = CobrandModel::getSession();
 
-        // Logging in the the Cobrand
-        $responseObj = Utils::httpPost($requestUrl, $params, null, null);
-
-		if ( $responseObj['httpStatus'] == '200' ) {
-
- 			// return response()->json( [ "foo" => "bar", "error" => [ "messages" => [ "User not found." ] ] ], 404);
-			return $responseObj['body'];
+		if (array_key_exists('cobSession', $cob)) {
+			
+			return $cob['cobSession'];
 
 		} else {
 
-			$err = array(
-				'datetime' => Carbon::now()->toDateTimeString(),
-				'ip' => \Request::ip(),
-				'userId' => null, 
-				'yslUserId' => null,
-				'file' => __FILE__, 
-				'method' => __FUNCTION__, 
-				'event' => 'Cobrand Login', 
-				'params' => json_encode($params), 
-			);
-			$error = array_merge($err, $responseObj['error']);
-			\Log::info(print_r($error, true));
-			$msg = 'Yodlee Error ' . $error['code'].' - "'.$error['message'].'"';
-			abort(500, $msg);
+			// Fetch cobrand URL from env file
+			$requestUrl = config('services.yodlee.cobrand.loginUrl');
+	          
+	        // Fetch cobrand credentials from env file
+	        $params = array(
+	        	'cobrandLogin' => config('services.yodlee.cobrand.login'), 
+	        	'cobrandPassword' => config('services.yodlee.cobrand.password')
+	        );
 
+	        // Logging in the the Cobrand
+	        $responseObj = Utils::httpPost($requestUrl, $params, null, null);
+
+			if ( $responseObj['httpStatus'] == '200' ) {
+
+				$cobrand = $responseObj['body'];
+	 			// return response()->json( [ "foo" => "bar", "error" => [ "messages" => [ "User not found." ] ] ], 404);
+	 			\DB::table('cobrand')->insert([
+	 				'cobrandId' => $cobrand['cobrandId'],
+	 				'applicationId' => $cobrand['applicationId'],
+	 				'cobSession' => $cobrand['session']['cobSession'],
+	 				'session_time' => date("Y-m-d H:i:s"),
+	 			]);
+	 			
+				// return $responseObj['body'];
+				return $cobrand['session']['cobSession'];
+
+			} else {
+
+				$err = array(
+					'datetime' => Carbon::now()->toDateTimeString(),
+					'ip' => \Request::ip(),
+					'userId' => null, 
+					'yslUserId' => null,
+					'file' => __FILE__, 
+					'method' => __FUNCTION__, 
+					'event' => 'Cobrand Login', 
+					'params' => json_encode($params), 
+				);
+				$error = array_merge($err, $responseObj['error']);
+				\Log::info(print_r($error, true));
+				$msg = 'Yodlee Error ' . $error['code'].' - "'.$error['message'].'"';
+				abort(500, $msg);
+
+			}
 		}
     }
 
@@ -85,6 +106,7 @@ class Cobrand {
 
     }
 
+    // Not used
 
     public function isActive($yslCobrandSessionToken) 
     {

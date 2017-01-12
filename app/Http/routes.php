@@ -44,7 +44,6 @@ Route::group(['middleware' => 'web'], function () {
 	Route::get('/account/link', 'AccountController@link');
 
 	Route::get('/account/search', 'AccountController@search');
-
 	Route::post('/account/search', 'AccountController@searchResults');
 
 	Route::get('/account/status/{id?}', 'AccountController@checkStatus');
@@ -56,14 +55,12 @@ Route::group(['middleware' => 'web'], function () {
 	// Route::get('/refresh/{id}', 'AccountController@refresh');
 
 	Route::get('/account/add/{id}', 'AccountController@addForm');
-
 	Route::post('/account/add/{id}', 'AccountController@addSubmit');
 	
 	Route::get('/account/{id}', 'AccountController@details');
 
-	Route::get('/notify', 'PagesController@notify');
-
-	Route::get('/contact', 'PagesController@contact');
+	Route::get('/contact', 'ContactController@contact');
+	Route::post('/contact', 'ContactController@contactSubmit');
 
 	/*
     // Named Routes
