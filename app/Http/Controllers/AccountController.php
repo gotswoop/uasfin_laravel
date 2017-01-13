@@ -84,7 +84,10 @@ class AccountController extends Controller
 					if (array_key_exists('accountName', $account)) {
 						$dashboard[$i]['accountName'] = $account['accountName'];
 					}
-					$dashboard[$i]['accountType'] = $account['accountType'];
+					$dashboard[$i]['accountType'] = ' - ';
+					if (array_key_exists('accountType', $account)) {
+						$dashboard[$i]['accountType'] = $account['accountType'];
+					}
 					$dashboard[$i]['isAsset'] = $account['isAsset'];
 					$dashboard[$i]['balanceAmount'] = $account['balance']['amount'];
 					$dashboard[$i]['balanceCurrency'] = $account['balance']['currency'];
