@@ -52,29 +52,46 @@ class AccountController extends Controller
     {
 	
 		// Fetching all accounts for the user
-		$dashboard = $this->account->getAllAccounts();
+		$accounts = $this->account->getAllAccounts();
 
-		if ($dashboard === false) {
+		if ($accounts === false) {
 		
 			return view('auth.login')->with(array('notification' => "User session timed out. Please login again."));
 		
 		}
 
-		if (isset($dashboard['account'])) {	// Showing users dashboard if accounts exist
-        	
+		if (array_key_exists('account', $accounts)) { // populating data for dashboard if user has accounts.
+		        	
         	// $netWorth = $this->account->getNetWorth(); // Not used
+        	$i=0;
         	$netWorth['total'] = 0;
 			$netWorth['assets'] = 0;
 			$netWorth['liabilities'] = 0;
 			
 			// Calculating the total assets and liabilities
-		   	foreach ($dashboard['account'] as $account) {
-		   		if (isset($account['balance'])) {
+		   	foreach ($accounts['account'] as $account) {
+		   		
+		   		if (array_key_exists('balance', $account)) { // Only look for accounts that have a balance		   		
 		   			if ($account['isAsset']) {
 						$netWorth['assets'] = $netWorth['assets'] + $account['balance']['amount'];
 					} else {
 						$netWorth['liabilities'] = $netWorth['liabilities'] + $account['balance']['amount'];
 					}
+
+					$dashboard[$i]['id'] = $account['id'];
+					$dashboard[$i]['providerName'] = $account['providerName'];
+					$dashboard[$i]['accountName'] = ' - ';
+					if (array_key_exists('accountName', $account)) {
+						$dashboard[$i]['accountName'] = $account['accountName'];
+					}
+					$dashboard[$i]['accountType'] = $account['accountType'];
+					$dashboard[$i]['isAsset'] = $account['isAsset'];
+					$dashboard[$i]['balanceAmount'] = $account['balance']['amount'];
+					$dashboard[$i]['balanceCurrency'] = $account['balance']['currency'];
+					$dashboard[$i]['CONTAINER'] = $account['CONTAINER'];
+					$dashboard[$i]['providerAccountId'] = $account['providerAccountId'];
+					$dashboard[$i]['lastUpdated'] = $account['lastUpdated'];
+					$i++;
 		   		}
 			}
 
@@ -82,7 +99,7 @@ class AccountController extends Controller
 			$netWorth['total'] = $netWorth['assets'] - $netWorth['liabilities'];
 
 			// Display dashboard with account data
-	        return view('account.dashboard')->with(array('accounts' => $dashboard['account'], 'netWorth' => $netWorth));
+	        return view('account.dashboard')->with(array('accounts' => $dashboard, 'netWorth' => $netWorth));
 
         } else {	// Showing empty dashboard
 

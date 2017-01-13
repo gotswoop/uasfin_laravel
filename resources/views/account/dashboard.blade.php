@@ -32,46 +32,33 @@
                     		<th>#</th>
                     		<th>Financial Institution</th>
                     		<th>Account  Name</th>
-                    		{{-- <th>Type 1</th> --}}
-                    		<th>Type</th>
+							<th>Type</th>
                     		<th>Balance</th>
-                    		<!--
-                    		<th>Last Updated</th>
-                    		<th>Refresh</th>
-                    		-->
                     	</tr>	
                     	
                     	@foreach ($accounts as $account)
-                    		@if (array_key_exists('balance', $account))
-	                    		<tr>
-	                    		<td> {{ $i++ }}. </td>
-	                    		<td style="font-weight: bold"><a href="/account/{{ $account['id'] }}/?container={{ $account['CONTAINER'] }}"> {{ $account['providerName'] }} </a></td>
-	                    		@if (array_key_exists('accountName', $account))
-	                    			<td> {{ $account['accountName'] }} </td>
-	                    		@else
-	                    			<td>&nbsp;</td>
-	                    		@endif
-	                    		<td> {{ $account['accountType'] }} </td>
-								{{-- <td> {{ \Html::link('/account/'.$account['id'], 'test', array('container' => 'creditCard') ) }} </td> --}}
-
-								{{--*/ $color = 'black' /*--}}
-								{{--*/ $neg = '' /*--}}
-								@if ($account['balance']['amount'])
-									{{--*/ $color = $account['isAsset'] ? 'green' : 'red' /*--}}
-									{{--*/ $neg = $account['isAsset'] ? '' : '-' /*--}}
-								@endif
-								<td style="font-weight: bold; color: {{ $color }}">
-								@if ($account['balance']['currency'] == 'USD')
-									 {{ $neg }}$ {{ number_format($account['balance']['amount'],2) }}
-								@else
-									{{ number_format($account['balance']['amount'],2) }} ({{ $account['balance']['currency'] }})
-								@endif
-								</td>
-								<!-- 
-								<td>{{ \Carbon\Carbon::createFromTimeStamp(strtotime($account['lastUpdated']))->diffForHumans() }} </td>
-								<td align="center"><a href="/account/refresh/{{ $account['providerAccountId'] }}"><img src="/images/refresh.png"></a></td>
-								-->
+                    		<tr>
+                    		<td> {{ $i++ }}. </td>
+                    		<td style="font-weight: bold"><a href="/account/{{ $account['id'] }}/?container={{ $account['CONTAINER'] }}"> {{ $account['providerName'] }} </a></td>
+                    		<td> {{ $account['accountName'] }} </td>
+                    		<td> {{ $account['accountType'] }} </td>
+							{{--*/ $color = 'black' /*--}}
+							{{--*/ $neg = '' /*--}}
+							@if ($account['balanceAmount'])
+								{{--*/ $color = $account['isAsset'] ? 'green' : 'red' /*--}}
+								{{--*/ $neg = $account['isAsset'] ? '' : '-' /*--}}
 							@endif
+							<td style="font-weight: bold; color: {{ $color }}">
+							@if ($account['balanceCurrency'] == 'USD')
+								 {{ $neg }}$ {{ number_format($account['balanceAmount'],2) }}
+							@else
+								{{ $neg }}{{ number_format($account['balanceAmount'],2) }} ({{ $account['balanceCurrency'] }})
+							@endif
+							</td>
+
+							{{-- <td>{{ \Carbon\Carbon::createFromTimeStamp(strtotime($account['lastUpdated']))->diffForHumans() }} </td> --}}
+							{{-- <td align="center"><a href="/account/refresh/{{ $account['providerAccountId'] }}"><img src="/images/refresh.png"></a></td> --}}
+
 						@endforeach
                    	</table>
 
