@@ -26,19 +26,20 @@ class Provider {
     public function searchProviders($searchString) 
 	{
 
-		// SWOOP - Clean input ($providerId)
-
 		// Checking if user is active
 		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
 			
-			// Only getting popular items 
-			// this stopped working and had to use a payload to HTTP GET
-			// $request = config('services.yodlee.providers.url'). '/?name=' .$searchString.'&priority=popular';
-			$request = config('services.yodlee.providers.url'). '/?name=' .$searchString;
-				
-			$payload = 'priority=popular'; // other options are: cobrand, suggested, popular
+			$request = config('services.yodlee.providers.url');
 
-		   	$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, null, $payload);
+			$queryArgs = array();
+			$queryArgs['name']=$searchString;
+			$queryArgs['priority']='cobrand'; // other options are: cobrand, suggested (not working), popular (Not working)
+
+			if(count($queryArgs) > 0) {
+            	$request = $request.'?'.http_build_query($queryArgs, '', '&');
+			}
+
+		   	$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, null);
 
 			if ( $responseObj['httpStatus'] == '200' ) {
 			

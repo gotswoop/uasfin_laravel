@@ -40,14 +40,18 @@
                     		<th>Refresh</th>
                     		-->
                     	</tr>	
+                    	
                     	@foreach ($accounts as $account)
-                    		@if (isset($account['balance']))
+                    		@if (array_key_exists('balance', $account))
 	                    		<tr>
 	                    		<td> {{ $i++ }}. </td>
 	                    		<td style="font-weight: bold"><a href="/account/{{ $account['id'] }}/?container={{ $account['CONTAINER'] }}"> {{ $account['providerName'] }} </a></td>
-	                    		<td> {{ $account['accountName'] }} </td>
-	                    		{{-- <td> {{ $account['CONTAINER'] }} </td> --}}
-								<td> {{ $account['accountType'] }} </td>
+	                    		@if (array_key_exists('accountName', $account))
+	                    			<td> {{ $account['accountName'] }} </td>
+	                    		@else
+	                    			<td>&nbsp;</td>
+	                    		@endif
+	                    		<td> {{ $account['accountType'] }} </td>
 								{{-- <td> {{ \Html::link('/account/'.$account['id'], 'test', array('container' => 'creditCard') ) }} </td> --}}
 
 								{{--*/ $color = 'black' /*--}}

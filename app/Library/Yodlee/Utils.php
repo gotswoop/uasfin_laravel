@@ -7,31 +7,19 @@ use GuzzleHttp;
 class Utils {
 
 
-	static function httpGet ( $requestUrl, $cobrandSession, $userSession = NULL, $payload = NULL )
+	static function httpGet ( $requestUrl, $cobrandSession, $userSession = NULL)
 	{
 
 		$client = new GuzzleHttp\Client(['http_errors' => false]);
-	        
-		$auth = '{';    
-		if (!empty($cobrandSession)) {
-		   $auth .= 'cobSession='.$cobrandSession;
-		}
-		if (!empty($userSession)) {
-		   $auth .= ', userSession='.$userSession;
-		}
-		if (!empty($payload)) {
-		   $auth .= ', '.$payload;
-		}
-		$auth .= '}';
 
-		/*
+		$auth = null;
+		
 		if (!empty($cobrandSession)) {
 		   $auth = '{cobSession='.$cobrandSession.'}';
 		}
 		if (!empty($cobrandSession) && !empty($userSession)) {
 		   $auth = '{cobSession='.$cobrandSession.', userSession='.$userSession.'}';
 		}
-		*/
 
 		$res = $client->request('GET', $requestUrl, [
 			'headers' => [ 'Authorization' => $auth ],
@@ -50,6 +38,7 @@ class Utils {
 		$client = new GuzzleHttp\Client(['http_errors' => false]);
 	        
 		$auth = null;
+
 		if (!empty($cobrandSession)) {
 		   $auth = '{cobSession='.$cobrandSession.'}';
 		}
