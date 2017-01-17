@@ -22,6 +22,7 @@ class Provider {
 	/** 
 	 * Search providers based on search string
 	 * Returns list of providers indexed by id (providerId)
+	 * YSL URL = /providers?name=chase&priority=cobrand
 	 */
     public function searchProviders($searchString) 
 	{
