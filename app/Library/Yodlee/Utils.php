@@ -26,9 +26,7 @@ class Utils {
 			'version' => 1.0,
 		]);
 
-	    $response = self::parseResponse($res);
-
-	    return $response;
+	    return self::parseResponse($res);
     
 	}
 
@@ -47,15 +45,15 @@ class Utils {
 		}
 
 		$res = $client->request('POST', $requestUrl , [
-			'headers' => [ 'Authorization' => $auth ],
-			'form_params' => $params,
-			'version' => 1.0,
+			'headers' => [ 'Authorization' => $auth, 'Content-type' => 'application/json' ],
+			'json' => $params,
 		]);
 
 		/*
 		$res = $client->request('POST', $requestUrl , [
 			'headers' => [ 'Authorization' => $auth, 'Content-type' => 'application/json'],
 			'form_params' => $params,
+			'version' => 1.0,
 		]);
 		*/
 
@@ -86,9 +84,41 @@ class Utils {
 
 	static function parseResponse ( $res ) {
 
+		/* $res object methods
+		  0 => "__construct"
+		  1 => "getStatusCode"
+		  2 => "getReasonPhrase"
+		  3 => "withStatus"
+		  4 => "getProtocolVersion"
+		  5 => "withProtocolVersion"
+		  6 => "getHeaders"
+		  7 => "hasHeader"
+		  8 => "getHeader"
+		  9 => "getHeaderLine"
+		  10 => "withHeader"
+		  11 => "withAddedHeader"
+		  12 => "withoutHeader"
+		  13 => "getBody"
+		  14 => "withBody"
+		*/
+	
 		$web['httpStatus'] = $res->getStatusCode();
+		$web['headers'] = $res->getHeaders();
 		$web['body'] = json_decode($res->getBody(), true);
 		$web['error'] = [];
+		if (isset($web['body'])) {
+			if ( array_key_exists('errorCode', $web['body']) ) {
+				$web['error']['code'] = $web['body']['errorCode'];
+			}
+			if ( array_key_exists('errorMessage', $web['body']) ) {
+				$web['error']['message'] = $web['body']['errorMessage'];
+			}
+			if ( array_key_exists('referenceCode', $web['body']) ) {
+				$web['error']['referenceCode'] = $web['body']['referenceCode'];
+			}
+		}
+			
+		/*
 		if ($web['httpStatus'] != "200") {
 			$web['error']['code'] = $web['body']['errorCode'];
 			$web['error']['message'] = $web['body']['errorMessage'];
@@ -97,7 +127,7 @@ class Utils {
 			}
 			$web['body'] = '';
 		}
-
+		*/
 		return $web;
 	}
 
@@ -124,7 +154,8 @@ class Utils {
 	}
 
 
-	static function httpPostCurl($request, $postargs, $cobSession, $userSession) {
+	static function httpPostCurl($request, $postargs, $cobSession, $userSession) { // NOT USED
+
 	   $auth = null;
 	   if (!empty($cobSession)) {
 		   $auth="{cobSession=".$cobSession."}";
@@ -157,7 +188,7 @@ class Utils {
 	   return $details;
 	}
 
-	static function get_headers_from_curl_response($response)
+	static function get_headers_from_curl_response($response) // NOT USED
 	{
 		$headers = array();
         $links = array();

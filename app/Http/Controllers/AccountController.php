@@ -421,7 +421,7 @@ class AccountController extends Controller
     	
  		$mod_provider = $this->providerAccounts->parseAndPopulateProviderDetails($provider, $loginNameEncrypted, $passwordEncrypted);
 
- 		$res = json_decode($this->providerAccounts->addProviderAccounts($mod_provider), true);
+ 		$res = $this->providerAccounts->addProviderAccounts($mod_provider);
 
  		if ($res === false) {
 

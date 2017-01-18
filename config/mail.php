@@ -54,7 +54,7 @@ return [
     |
     */
 
-    'from' => ['address' => 'uashelp@usc.edu', 'name' => 'UASFIN'],
+    'from' => ['address' => 'noreply@uasfin.usc.edu', 'name' => 'UASFIN'],
 
     /*
     |--------------------------------------------------------------------------

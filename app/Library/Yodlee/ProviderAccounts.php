@@ -38,10 +38,12 @@ class ProviderAccounts {
             	$requestUrl = $requestUrl.'?'.http_build_query($queryArgs, '', '&');
 			}
 
-			$params = array('loginForm'=>$params['provider'][0]['loginForm']);
-			$params = json_encode($params, JSON_UNESCAPED_UNICODE);
-				
-	        $responseObj = Utils::httpPostCurl($requestUrl ,$params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
+			$params = $params['provider'][0]['loginForm'];
+			$params = array('loginForm'=>$params);
+			// $params = json_encode($params, JSON_UNESCAPED_UNICODE);
+			
+			$responseObj = Utils::httpPost($requestUrl, $params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);	
+	        //$responseObj = Utils::httpPostCurl($requestUrl ,$params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 
 			if ( $responseObj['httpStatus'] == '201' ) {
 

@@ -33,15 +33,16 @@ class Cobrand {
 			$requestUrl = config('services.yodlee.cobrand.loginUrl');
 				          
 	        // Fetch cobrand credentials from env file
-	        $params = array(
-	        	'cobrandLogin' => config('services.yodlee.cobrand.login'), 
-	        	'cobrandPassword' => config('services.yodlee.cobrand.password')
-	        );
+	        $cobrand['cobrandLogin'] = config('services.yodlee.cobrand.login');
+	        $cobrand['cobrandPassword'] = config('services.yodlee.cobrand.password');
+	        $cobrand['locale'] = config('services.yodlee.user.locale');
+
+	        $params = array('cobrand'=>$cobrand);
 
 	        // Logging in the the Cobrand
 	        $responseObj = Utils::httpPost($requestUrl, $params, null, null);
 
-			if ( $responseObj['httpStatus'] == '200' ) {
+	        if ( $responseObj['httpStatus'] == '200' ) {
 
 				$cobrand = $responseObj['body'];
 	 			// return response()->json( [ "foo" => "bar", "error" => [ "messages" => [ "User not found." ] ] ], 404);

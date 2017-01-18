@@ -60,6 +60,7 @@ return [
             'currenyPreference' => env('YODLEE_USER_CURRENCY_PREFERENCE'),
             'timezonePreference' => env('YODLEE_USER_TIMEZONE_PREFERENCE'),
             'dateFormatPreference' => env('YODLEE_USER_DATEFORMAT_PREFERENCE'),
+            'locale' => env('YODLEE_USER_LOCALE'),
         ],
         'providers' => [
         	'url' => env('YODLEE_BASE_URL') . env('YODLEE_PROVIDER_URL'),

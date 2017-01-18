@@ -7,28 +7,28 @@ use Carbon\Carbon;
 
 class User {
 
+	/*
+	* YSL URL (POST CURL): https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/user/register
+	*/
 	public function register($data, $cobrandSessionToken) 
 	{
 
 		// SWOOP: Check if Cobrand Session is still active
 		$request = config('services.yodlee.user.registerUrl');
 
-		$params = array('registerParam' => '{ 
-	        "user": {
-	            "loginName": "'.$data['email'].'",
-	            "password": "'.$data['password'].'",
-	            "email": "'.$data['email'].'",
-	        	"name": {
-	            	"first" : "'.$data['firstName'].'",
-	                "last": "'.$data['lastName'].'"
-				},
-	            "preferences": {
-	                "currency": "'.config('services.yodlee.user.currenyPreference').'",
-	                "timeZone": "'.config('services.yodlee.user.timezonePreference').'",
-	                "dateFormat": "'.config('services.yodlee.user.dateFormatPreference').'"
-	            }
-			}
-        }');
+		$user['loginName'] = $data['email'];
+		$user['password'] = $data['password'];
+		$user['email'] = $data['email'];
+		$user['name']['first'] = $data['firstName'];
+		$user['name']['last'] = $data['lastName'];
+		$user['preferences']['currency'] = config('services.yodlee.user.currenyPreference');
+		$user['preferences']['timeZone'] = config('services.yodlee.user.timezonePreference');
+		$user['preferences']['dateFormat'] = config('services.yodlee.user.dateFormatPreference');
+		$user['preferences']['locale'] = config('services.yodlee.user.locale');
+
+		$params = array('user'=>$user);
+		// $params = array('userParam'=>$params); NOT REQUIRED. Documentation is incorrect
+		// $params = json_encode($params, JSON_UNESCAPED_UNICODE); // Not reuired as Guzzle post is doing the conversion to json
 
 		$responseObj = Utils::httpPost($request, $params, $cobrandSessionToken, null);
 
@@ -56,16 +56,22 @@ class User {
 		}
     }
 
+    /*
+	* YSL URL (POST CURL): https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/user/login
+	*/
 	public function login($cobrandSessionToken, $email, $password)
     {
 
     	// SWOOP: Check if Cobrand Session is still active
-
-		$request = config('services.yodlee.user.loginUrl');
-
-		$params = array('loginName' => $email, 'password' => $password );
-
-		$responseObj = Utils::httpPost($request, $params, $cobrandSessionToken, null);
+		$requestUrl = config('services.yodlee.user.loginUrl');
+		
+		$user['loginName'] = $email;
+		$user['password'] = $password;
+		$user['locale'] = config('services.yodlee.user.locale');
+		
+		$params = array('user'=>$user);
+		
+		$responseObj = Utils::httpPost($requestUrl, $params, $cobrandSessionToken, null);
 
 		if ( $responseObj['httpStatus'] == '200' ) {
 
@@ -128,15 +134,18 @@ class User {
 		return false;
     }
 
+    /*
+	* YSL URL (POST CURL): https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/user/login
+	*/
     public function logout($cobrandSessionToken, $userSessionToken)
     {
     	// Checking if YSL User session is still active
     	if ( $this->isActive($cobrandSessionToken, $userSessionToken) ) {
 
-	    	$request = config('services.yodlee.user.logoutUrl');
+	    	$requestUrl = config('services.yodlee.user.logoutUrl');
 
 	    	// Logout the YSL User
-			$responseObj = Utils::httpPost($request, null, $cobrandSessionToken, $userSessionToken);
+			$responseObj = Utils::httpPost($requestUrl, null, $cobrandSessionToken, $userSessionToken);
 			
 			if ( $responseObj['httpStatus'] == '204' ) {
 
@@ -208,17 +217,21 @@ class User {
 		}
     }
 
+    /*
+	* YSL URL (POST CURL): https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/user/credentials
+	*/
     private function resetPasswordWithToken($cobrandSessionToken, $user, $userToken, $loginName, $newPassword) {
 
     	// TODO - get from config
     	$requestUrl = 'https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/user/credentials';
 
-    	$payload = array("loginName"=>$loginName, "token"=>$userToken, "newPassword"=> $newPassword);
+    	$payload['loginName'] = $loginName;
+    	$payload['token'] = $userToken;
+    	$payload['newPassword'] = $newPassword;
 
 		$params = array('user'=>$payload);
-		$params = json_encode($params, JSON_UNESCAPED_UNICODE);
-			
-        $responseObj = Utils::httpPostCurl($requestUrl ,$params, $cobrandSessionToken, null);
+					
+        $responseObj = Utils::httpPost($requestUrl ,$params, $cobrandSessionToken, null);
 
 		if ( $responseObj['httpStatus'] == '204' ) {
 
@@ -236,12 +249,10 @@ class User {
 				'event' => 'Resetting Password with token', 
 				'params' => '', 
 			);
-			$error = array_merge($err, $responseObj); // THIS IS DIFF
+			$error = array_merge($err, $responseObj['error']);
 			\Log::info(print_r($error, true));
-			// $msg = 'Yodlee Error ' . $error['code'].' - "'.$error['message'].'"';
-			// abort(500, $msg);
-			return false;
-
+			$msg = 'Yodlee Error ' . $error['code'].' - "'.$error['message'].'"';
+			abort(500, $msg);
 		}
 	}
 
