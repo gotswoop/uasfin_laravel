@@ -39,7 +39,7 @@
                     	@foreach ($accounts as $account)
                     		<tr>
                     		<td> {{ $i++ }}. </td>
-                    		<td style="font-weight: bold"><a href="/account/{{ $account['id'] }}/?container={{ $account['CONTAINER'] }}"> {{ $account['providerName'] }} </a></td>
+                    		<td style="font-weight: bold"><a href="/account/details/{{ $account['id'] }}/?container={{ $account['CONTAINER'] }}"> {{ $account['providerName'] }} </a></td>
                     		<td> {{ $account['accountName'] }} </td>
                     		<td> {{ $account['accountType'] }} </td>
 							{{--*/ $color = 'black' /*--}}

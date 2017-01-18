@@ -75,14 +75,12 @@ class AuthController extends Controller
      */
     protected function validator(array $data)
     {
-
     	/* 
     	Password requirements from Yodlee: Password must be at 
     	least 8 characters long and contain at least one upper 
     	case letter, one number and any of these special characters 
     	!@#$%^&*()].
-    	
-    	Swaroop: Documentation is wrong. "]" and "." are actually NOT allowed
+    	Documentation is wrong. "]" and "." are actually NOT allowed. - Swaroop
     	*/
 
 		$messages = [

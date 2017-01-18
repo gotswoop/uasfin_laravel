@@ -134,8 +134,8 @@ class Utils {
 	   }
 	  
 	   $session = curl_init($request);
-	   curl_setopt ($session, CURLOPT_POST, true); 
-	   curl_setopt ($session, CURLOPT_POSTFIELDS, $postargs); 
+	   curl_setopt($session, CURLOPT_POST, true); 
+	   curl_setopt($session, CURLOPT_POSTFIELDS, $postargs); 
 	   curl_setopt($session, CURLOPT_HTTPHEADER, array('Authorization:'.$auth,'Content-type: application/json'));
 	   curl_setopt($session, CURLOPT_HEADER, true); 
 	   curl_setopt($session, CURLOPT_RETURNTRANSFER, true);

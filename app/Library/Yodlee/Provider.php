@@ -23,6 +23,7 @@ class Provider {
 	 * Search providers based on search string
 	 * Returns list of providers indexed by id (providerId)
 	 * YSL URL = /providers?name=chase&priority=cobrand
+	 * GET https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/providers?name=chase&priority=cobrand
 	 */
     public function searchProviders($searchString) 
 	{
@@ -77,6 +78,8 @@ class Provider {
 	/** 
 	 * Fetch information about the provider such as name, details, login form etc.
 	 * Called to populate login screen
+	 * YSL URL = /providers/{providerId}
+	 * GET https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/providers/492
 	 */
 	public function getProviderDetails($providerId) 
 	{
@@ -90,10 +93,17 @@ class Provider {
 
 			$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 
-			if ( $responseObj['httpStatus'] == '200' ) {
-				
-				return $responseObj['body'];
+			if ( $responseObj['httpStatus'] == '200') {
 
+				if ( array_key_exists('provider', $responseObj['body']) ) {
+				
+					return $responseObj['body'];
+
+				} else {
+
+					return false;
+				}
+				
 			} else {
 				
 				$err = array(
@@ -120,95 +130,10 @@ class Provider {
 		}
 	}
 
-	public function parseAndPopulateProviderDetails($provider,$field_value_0,$field_value_1) {
-
-		$resObj = Utils::parseJson($provider);
-
-		$providerObj = $resObj['provider'];
-
-		$loginForm = $providerObj[0]['loginForm'];	
-
-		$rows = $loginForm['row'];
-
-		$rows[0]['field'][0]['value']= $field_value_0;
-
-		$rows[1]['field'][0]['value']= $field_value_1;
-
-		$loginForm['row'][0]=$rows[0];
-
-		$loginForm['row'][1]=$rows[1];
-
-		$providerObj[0]['loginForm'] = $loginForm;
-
-		$mod_provider_obj = array('provider'=>$providerObj);
-
-		return $mod_provider_obj;
-	}
-
-
-	// -------------------- NOT USED YET ----------------------------------
-
-	public function parseAndPopulateLoginFormForToken($refresh) {
-        
-        $resObj = Utils::parseJson($refresh);
-        $loginForm = $resObj['loginForm'];
-        $providerParam = json_encode($loginForm,JSON_UNESCAPED_UNICODE);
-        echo "<<<>>>:::".$providerParam.PHP_EOL.PHP_EOL;
-        $formType = $loginForm['formType'];
-        echo PHP_EOL."formType :::".$formType.PHP_EOL;
-        
-        if(empty($formType)) {
-          echo PHP_EOL.":::Inside Else Scenario:::".PHP_EOL;
-          return null;
-        } else if($formType == 'token') {
-          echo PHP_EOL.":::Token Scenario:::".PHP_EOL;
-          $rows = $loginForm['row'];
-          $rows[0]['field'][0]['value']= '123456';
-          $loginForm['row'][0]=$rows[0];
-        } else if($formType=='questionAndAnswer') {
-          echo PHP_EOL.":::Q&A Scenario:::".PHP_EOL;
-          $rows = $loginForm['row'];
-          $rows[0]['field'][0]['value']= 'Texas';
-          $rows[1]['field'][0]['value']= 'w3schools';
-          $loginForm['row'][0]=$rows[0];
-          $loginForm['row'][1]=$rows[1];
-        } else if($formType=='image') {
-          echo PHP_EOL.":::Image Scenario:::".PHP_EOL;
-          $rows = $loginForm['row'];
-          $rows[0]['field'][0]['value']= '5678';
-          $loginForm['row'][0]=$rows[0];
-        }
-      
-        $providerParam = json_encode($loginForm,JSON_UNESCAPED_UNICODE);
-        echo "<<<>>>:::".$providerParam.PHP_EOL.PHP_EOL;
-        $resObj['loginForm'] = $loginForm;
-          $mod_loginForm_obj = array('loginForm'=>$resObj['loginForm']);
-        //$mod_loginForm_obj_str = json_encode($mod_loginForm_obj,JSON_UNESCAPED_UNICODE);
-        //echo "<<<>>>:::".$mod_loginForm_obj_str.PHP_EOL.PHP_EOL;
-        return $mod_loginForm_obj;
-    }
-
-    public function parseAndPopulateLoginFormForQuesAns($refresh) {
-        $resObj = Utils::parseJson($refresh);
-        $loginForm = $resObj['loginForm'];
-        $providerParam = json_encode($loginForm,JSON_UNESCAPED_UNICODE);
-        echo "<<<>>>:::".$providerParam.PHP_EOL.PHP_EOL;
-        $rows = $loginForm['row'];
-        $rows[0]['field'][0]['value']= 'Texas';
-        $rows[1]['field'][0]['value']= 'w3schools';
-        $loginForm['row'][0]=$rows[0];
-        $loginForm['row'][1]=$rows[1];
-        $providerParam = json_encode($loginForm,JSON_UNESCAPED_UNICODE);
-        echo "<<<>>>:::".$providerParam.PHP_EOL.PHP_EOL;
-        $resObj['loginForm'] = $loginForm;
-          $mod_loginForm_obj = array('loginForm'=>$resObj['loginForm']);
-        //$mod_loginForm_obj_str = json_encode($mod_loginForm_obj,JSON_UNESCAPED_UNICODE);
-        //echo "<<<>>>:::".$mod_loginForm_obj_str.PHP_EOL.PHP_EOL;
-        return $mod_loginForm_obj;
-    }
-
-
-	function addAccount($params)
+    ########################
+    ##	NOT IN USE YET
+    ########################
+	function addAccount($params) // NOT USED
     {
 
     	// Checking if user is active
@@ -257,7 +182,7 @@ class Provider {
 	}
 
 
-	public function refreshProvider($providerId)  // NOT CORRECT
+	public function refreshProvider($providerId)  // NOT CORRECT - NOT USED
 	{
 
 		// SWOOP - Clean input ($providerId)

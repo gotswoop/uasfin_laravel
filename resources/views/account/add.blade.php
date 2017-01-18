@@ -2,7 +2,7 @@
 
 @section('content')
 
-{{-- */ $form = $providerDetails[0];  /*--}}
+{{-- */ $form = $providerDetails;  /*--}}
 <?php //dd($form); ?>
 <div class="container">
     <div class="row">

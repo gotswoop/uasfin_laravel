@@ -14,6 +14,8 @@ class Cobrand {
      *
      * @param  null
      * @return Cobrand Id
+     * FROM AuthController constructor
+     * YSL URL (POST): https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/cobrand/login
      */
 	public function login() 
 	{
@@ -29,7 +31,7 @@ class Cobrand {
 
 			// Fetch cobrand URL from env file
 			$requestUrl = config('services.yodlee.cobrand.loginUrl');
-	          
+				          
 	        // Fetch cobrand credentials from env file
 	        $params = array(
 	        	'cobrandLogin' => config('services.yodlee.cobrand.login'), 
@@ -74,6 +76,10 @@ class Cobrand {
 		}
     }
 
+    /*
+    * FROM AccountController -> addSubmit
+    * YSL URL (POST): https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/cobrand/publicKey
+    */
     public function getPublicKey() 
     {
 		
@@ -106,8 +112,9 @@ class Cobrand {
 
     }
 
-    // Not used
-
+    ########################
+    ##	NOT IN USE YET
+    ########################
     public function isActive($yslCobrandSessionToken) 
     {
 		

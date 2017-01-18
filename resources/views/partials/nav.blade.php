@@ -46,6 +46,6 @@
                     <li><a href="{{ url('/logout') }}"><button type="button" class="btn btn-primary btn-md">&nbsp;{{ substr(Auth::user()->firstName, 0, 1) .' '.Auth::user()->lastName }} (Logout)&nbsp;</button></a></li>
                 @endif
         	</ul>
-    	</div>
+        </div>
 	</div>
 </nav>

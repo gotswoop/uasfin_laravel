@@ -21,7 +21,9 @@ class Account {
 
 	/**
      * Get all accounts that belong to a user to show on dashboard
-     */
+     * FROM AccountController -> dashboard()
+     * YSL URL (GET): https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/accounts
+     */ 
 	public function getAllAccounts() 
 	{
 
@@ -66,8 +68,9 @@ class Account {
 
     /**
      * Get a summary of the account to display on the individual account details page
+     * FROM AccountController -> details()
+	 * YSL URL (GET): https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/accounts/10683262?container=creditCard
      */
-
 	public function getSummary($accountId, $container) 
 	{
 
@@ -76,7 +79,7 @@ class Account {
 
 			// SWOOP: Clean input ($accoundId)
 			$request = config('services.yodlee.accounts.url'). '/' . $accountId.'?container='.$container;
-
+			
 			$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 
 			if ( $responseObj['httpStatus'] == '200' ) {
@@ -113,15 +116,16 @@ class Account {
 
     /**
      * Get a list of all transactions for the account to display on the individual account details page
-     */
+     * FROM AccountController -> details()
+     * YSL URL (GET): https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/transactions/?accountId=10683262
+	 */
     public function getTransactions($accountId) 
 	{
-
 		// Checking if user is active
 		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
 			// SWOOP: Clean input ($accoundId)
 			$request = config('services.yodlee.transactions.url'). '?accountId=' . $accountId;
-
+			
 			$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 
 			if ( $responseObj['httpStatus'] == '200' ) {
@@ -156,13 +160,9 @@ class Account {
 		}
     }
 
-    
-
-
-
-
-    // ------------------------------  NOT IN USE YET
-
+    ########################
+    ##	NOT IN USE YET
+    ########################
     public function getNetWorth() 
 	{
 

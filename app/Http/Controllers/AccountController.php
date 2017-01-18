@@ -263,7 +263,6 @@ class AccountController extends Controller
     	$container = $request->input('container');
     	
      	$accountSummary = $this->account->getSummary($id, $container);
-
      	$accountDetails = $this->account->getTransactions($id);
      	
      	if ($accountSummary === false || $accountDetails === false) {
@@ -287,6 +286,7 @@ class AccountController extends Controller
      * Add an account selecting from a list of suggested financial institutions
      *
      * @return \Illuminate\Http\Response
+     * HTTP GET
      */
     public function link()
     {
@@ -295,20 +295,20 @@ class AccountController extends Controller
 
     /**
      * Add an account using search
-     *
      * @return \Illuminate\Http\Response
+     * HTTP GET
      */
-    public function search()
+    public function searchAccountGET()
     {
     	return view('account.search');
     }
 
     /**
      * List search results.
-     *
      * @return \Illuminate\Http\Response
+     * HTTP POST
      */
-    public function searchResults(Request $request)
+    public function searchAccountPOST(Request $request)
     {
 
     	// Validating search field
@@ -318,13 +318,13 @@ class AccountController extends Controller
 
     	$searchResults = $this->provider->searchProviders($input['search']);
 
-    	// Logging the search to table search_log
+		// Logging the search to table search_log
     	DB::table('search_log')->insert(
     		['userId' => Auth::user()->id, 'yslUserId' => Auth::user()->yslUserId, 'date_time' => Carbon::now()->toDateTimeString(), 'ip' => \Request::ip(), 'searchWord' => $input['search']]
 		);
 
     	if (sizeof($searchResults)) {
-    		// successful with results
+    		// Successful with results
 			$data['providers'] = $searchResults['provider'];
 			$data['size'] = sizeof($searchResults);
 			return view('account.search')->with('data', $data);
@@ -340,16 +340,21 @@ class AccountController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function addForm($id = null)
+    public function addAccountGET($id = null) // SWOOP - id cannot be blank here 
     {
     	
     	$provider = $this->provider->getProviderDetails($id);
-
-    	return view('account.add')->with('providerDetails', $provider['provider']);
+  
+  		if ($provider === false) {
+  			return view('account.search')->withErrors('Problem fetching financial institution. Please try searching again or report issue.');
+    	}
+    	
+    	$provider_ = reset($provider);
+      	return view('account.add')->with('providerDetails', reset($provider_));
     	
     }
 
-    public function addSubmit(Request $request, $id = null)
+    public function addAccountPOST(Request $request, $id = null) // SWOOP - id cannot be blank here
     {
     	
     	$this->validate($request, [
@@ -360,20 +365,27 @@ class AccountController extends Controller
     	$input = $request->all();
 
     	$provider = $this->provider->getProviderDetails($id);
+
+    	$provider = $this->provider->getProviderDetails($id);
+  
+  		if ($provider === false) {
+    		return view('account.search')->withErrors('Problem linking financial institution. Please try again or report issue.');
+    	}
     	$providerName = $provider['provider'][0]['name'];
 
-    	$provider = json_encode($provider, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
-    	
+    	//$provider = json_encode($provider, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); // No longer needed as the reverse of this happening in parseAndPopulateProviderDetails
+    	    	    	
         $res = $this->cobrand->getPublicKey();
     	if(!empty($res['keyAsPemString'])) {
         	$publicKey = $res['keyAsPemString'];
         }
 
+        // Encrypting the username and password
     	$loginNameEncrypted = Utils::encryptData($input['login'], $publicKey);
     	$passwordEncrypted = Utils::encryptData($input['password'], $publicKey);
- 		$mod_provider = $this->provider->parseAndPopulateProviderDetails($provider, $loginNameEncrypted, $passwordEncrypted);
+    	
+ 		$mod_provider = $this->providerAccounts->parseAndPopulateProviderDetails($provider, $loginNameEncrypted, $passwordEncrypted);
 
- 		// Usiing new providerAccounts API
  		$res = json_decode($this->providerAccounts->addProviderAccounts($mod_provider), true);
  		$providerAccountId = $res['providerAccountId'];
 
@@ -386,6 +398,9 @@ class AccountController extends Controller
  		return \Redirect::to($url)->with('accountId', $id);
  	}
 
+ 	########################
+    ##	NOT IN USE YET
+    ########################
     /**
      * Refresh a specific provider or all providers that belong to a user
      */
@@ -395,7 +410,7 @@ class AccountController extends Controller
     	
     	if ($providerId) {
 
-    		self::addCheckStatus($providerId);
+    		self::addCheckStatus($providerId); // method does not even exist
 
     		/*
     		$this->provider->refreshProvider($providerId);
