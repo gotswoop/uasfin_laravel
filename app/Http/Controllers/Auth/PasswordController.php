@@ -30,7 +30,7 @@ class PasswordController extends Controller
     use ResetsPasswords;
 
     // Redirect after a successful password change
-    protected $redirectTo = 'account/dashboard';
+    protected $redirectTo = 'login';
 
     /**
      * Create a new password controller instance.
@@ -145,7 +145,9 @@ class PasswordController extends Controller
 
     	if ($res === false) {
 
-    		return redirect('password/reset')->with('status', 'Unable to reset password. Please make sure the password is different from the current password and meets the requirements below.');
+    		// TODO - NOT WORKING
+    		// redirect('password/reset')->with('status', 'Unable to reset password. Please make sure the password is different from the current password and meets the requirements below.');
+    		return;
 
     	} else {
 
@@ -157,8 +159,10 @@ class PasswordController extends Controller
         	$user->save();
 
         	// this doesn't work for us
-	        // Auth::guard($this->getGuard())->login($user);
-	        return redirect('login')->with('status', 'Password changed successfully. Please login with your new password to continue');
+		    // Auth::guard($this->getGuard())->login($user);
+	        // TODO - NOT WORKING
+	        // return redirect('login')->with('status', 'Password changed successfully. Please login with your new password to continue');
+	        return;
     	}
     }
 }

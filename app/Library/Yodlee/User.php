@@ -27,9 +27,7 @@ class User {
 		$user['preferences']['locale'] = config('services.yodlee.user.locale');
 
 		$params = array('user'=>$user);
-		// $params = array('userParam'=>$params); NOT REQUIRED. Documentation is incorrect
-		// $params = json_encode($params, JSON_UNESCAPED_UNICODE); // Not reuired as Guzzle post is doing the conversion to json
-
+		
 		$responseObj = Utils::httpPost($request, $params, $cobrandSessionToken, null);
 
 		if ( $responseObj['httpStatus'] == '200' ) {
@@ -52,6 +50,7 @@ class User {
 			\Log::info(print_r($error, true));
 			$msg = 'Yodlee Error ' . $error['code'].' - "'.$error['message'].'"';
 			abort(500, $msg);
+			// TODO - return false and capture error someplace else?
 
 		}
     }
