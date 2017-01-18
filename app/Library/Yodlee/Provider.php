@@ -68,8 +68,6 @@ class Provider {
 			
 		} else {
 
-			// Logout user when Yodlee session is inactive
-			Auth::Logout();
 			return false;
 
 		}
@@ -101,7 +99,7 @@ class Provider {
 
 				} else {
 
-					return false;
+					return null;
 				}
 				
 			} else {
@@ -124,8 +122,6 @@ class Provider {
 
 		} else {
 
-			// Logout user when Yodlee session is inactive
-			Auth::Logout();
 			return false;
 		}
 	}
@@ -133,40 +129,6 @@ class Provider {
     ########################
     ##	NOT IN USE YET
     ########################
-	function addAccount($params) // NOT USED
-    {
-
-    	// Checking if user is active
-		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
-
-	    	$providerId = $params['provider'][0]['id'];
-
-	    	$requestUrl = config('services.yodlee.providers.url'). '/' .$providerId;
-
-	    	$params = json_encode($params, JSON_UNESCAPED_UNICODE);
-
-	    	$responseObj = Utils::httpPostCurl($requestUrl ,$params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
-
-			if ( $responseObj['httpStatus'] == '201' ) {
-
-				return $responseObj['body'];
-
-			} else {
-
-				$err = array('file' => __FILE__, 'method' => __FUNCTION__, 'event' => 'Adding account to UASFIN'); 
-				$error = array_merge($err, $responseObj['error']);
-				dd($error);
-
-			}
-
-		} else {
-
-			// Logout user when Yodlee session is inactive
-			Auth::Logout();
-			return false;
-		}
-	}
-
 	public function refreshAllProviders() // NOT USED YET
 	{
 

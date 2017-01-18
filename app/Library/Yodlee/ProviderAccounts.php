@@ -28,23 +28,21 @@ class ProviderAccounts {
 
     	// Checking if user is active
 		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
-
-			$queryArgs = array();
-			$queryArgs['providerId']=$params['provider'][0]['id'];
-			
+		
 			$requestUrl = config('services.yodlee.providerAccounts.url');
 
-			$params = array('loginForm'=>$params['provider'][0]['loginForm']);
-						
+			$queryArgs = array();
+			$queryArgs['providerId'] = $params['provider'][0]['id'];
+		
 			if(count($queryArgs) > 0) {
             	$requestUrl = $requestUrl.'?'.http_build_query($queryArgs, '', '&');
 			}
 
-	        $params = json_encode($params, JSON_UNESCAPED_UNICODE);
-	    	$responseObj = Utils::httpPostCurl($requestUrl ,$params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
+			$params = array('loginForm'=>$params['provider'][0]['loginForm']);
+			$params = json_encode($params, JSON_UNESCAPED_UNICODE);
+				
+	        $responseObj = Utils::httpPostCurl($requestUrl ,$params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 
-	        dd($responseObj);
-			
 			if ( $responseObj['httpStatus'] == '201' ) {
 
 				return $responseObj['body'];
@@ -63,8 +61,6 @@ class ProviderAccounts {
 
 		} else {
 
-			// Logout user when Yodlee session is inactive
-			Auth::Logout();
 			return false;
 		}
 	}
@@ -81,11 +77,10 @@ class ProviderAccounts {
 		// Checking if user is active
 		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
 
-			$request = config('services.yodlee.providerAccounts.url'). '/providerAccounts';
+			$request = config('services.yodlee.providerAccounts.url');
 			
 			$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
-				
-			
+		
 			if ( $responseObj['httpStatus'] == '200' ) {
 				
 				return $responseObj['body'];
@@ -110,8 +105,6 @@ class ProviderAccounts {
 		
 		} else {
 
-			// Logout user when Yodlee session is inactive
-			Auth::Logout();
 			return false;
 
 		}
@@ -127,7 +120,7 @@ class ProviderAccounts {
 		// Checking if user is active
 		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
 
-			$request = config('services.yodlee.providerAccounts.url'). '/providerAccounts/'.$providerAccountId;
+			$request = config('services.yodlee.providerAccounts.url'). '/'.$providerAccountId;
 			
 			$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 				
@@ -155,10 +148,7 @@ class ProviderAccounts {
 		
 		} else {
 
-			// Logout user when Yodlee session is inactive
-			Auth::Logout();
 			return false;
-			
 		}
 	}
 
@@ -171,7 +161,7 @@ class ProviderAccounts {
 
 			$params = array('providerAccountId' => $providerId);
 
-			$request = config('services.yodlee.providerAccounts.url'). '/providerAccounts/'.$providerId;
+			$request = config('services.yodlee.providerAccounts.url'). '/'.$providerId;
 			
 			$responseObj = Utils::httpDelete($request, $params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 				
@@ -201,8 +191,6 @@ class ProviderAccounts {
 		
 		} else {
 
-			// Logout user when Yodlee session is inactive
-			Auth::Logout();
 			return false;
 			
 		}
@@ -293,47 +281,5 @@ class ProviderAccounts {
         //echo "<<<>>>:::".$mod_loginForm_obj_str.PHP_EOL.PHP_EOL;
         return $mod_loginForm_obj;
     }
-
-    /*	
-    * still using the old provider here
-    * YSL URL (POST CURL): https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/providers/643
-    */
-    function addProviderAccounts_OLD($params)
-    {
-
-    	// Checking if user is active
-		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
-
-
-			$providerId = $params['provider'][0]['id'];
-	    	$requestUrl = config('services.yodlee.providers.url'). '/' .$providerId;
-
-	    	$params = json_encode($params, JSON_UNESCAPED_UNICODE);
-
-	    	$responseObj = Utils::httpPostCurl($requestUrl ,$params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
-		
-			if ( $responseObj['httpStatus'] == '201' ) {
-
-				return $responseObj['body'];
-
-			} else {
-
-				dd($responseObj);
-				// There is no error here!
-
-				$err = array('file' => __FILE__, 'method' => __FUNCTION__, 'event' => 'Adding account to UASFIN'); 
-				$error = array_merge($err, $responseObj['error']);
-				dd($error);
-
-
-			}
-
-		} else {
-
-			// Logout user when Yodlee session is inactive
-			Auth::Logout();
-			return false;
-		}
-	}
 
 }

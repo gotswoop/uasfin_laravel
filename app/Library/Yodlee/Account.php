@@ -59,8 +59,6 @@ class Account {
 
 		} else {
 
-			// Logout user when Yodlee session is inactive
-			Auth::Logout();
 			return false;
 							
 		}
@@ -107,8 +105,6 @@ class Account {
 
 		} else {
 
-			// Logout user when Yodlee session is inactive
-			Auth::Logout();
 			return false;
 
 		}
@@ -153,8 +149,6 @@ class Account {
 
 		} else {
 
-			// Logout user when Yodlee session is inactive
-			Auth::Logout();
 			return false;	
 
 		}
@@ -187,8 +181,6 @@ class Account {
 
 		} else {
 
-			// Logout user when Yodlee session is inactive
-			Auth::Logout();
 			return false;
 
 		}

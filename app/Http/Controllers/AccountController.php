@@ -56,7 +56,9 @@ class AccountController extends Controller
 
 		if ($accounts === false) {
 		
-			return view('auth.login')->with(array('notification' => "User session timed out. Please login again."));
+			Auth::Logout();
+			return redirect('login')->with('status', 'User session timed out. Please login again.');
+			// return view('auth.login')->with(array('notification' => "User session timed out. Please login again."));
 		
 		}
 
@@ -119,6 +121,12 @@ class AccountController extends Controller
 
 			$res = $this->providerAccounts->deleteProviderAccounts($providerId); 
 
+			if ($res === false) {
+
+				Auth::Logout();
+				return redirect('login')->with('status', 'User session timed out. Please login again.');
+
+			}
 			if ($res) {
 				 
 				return \Redirect::to('account/status');					
@@ -144,6 +152,13 @@ class AccountController extends Controller
 			$accountId = \Session::get('accountId');
 			
 			$res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
+
+			if ($res === false) {
+		
+				Auth::Logout();
+				return redirect('login')->with('status', 'User session timed out. Please login again.');
+			
+			}
 			
 			$status = $res['providerAccount']['refreshInfo']['status'];
 			$statusCode = $res['providerAccount']['refreshInfo']['statusCode'];
@@ -216,7 +231,9 @@ class AccountController extends Controller
 
 			if ($accounts === false) {
 			
-				return view('auth.login')->with(array('notification' => "Session timed out. Please login again."));
+				Auth::Logout();
+				return redirect('login')->with('status', 'User session timed out. Please login again.');
+				// return view('auth.login')->with(array('notification' => "Session timed out. Please login again."));
 			
 			}
 
@@ -267,7 +284,9 @@ class AccountController extends Controller
      	
      	if ($accountSummary === false || $accountDetails === false) {
 		
-			return view('auth.login')->with(array('notification' => "Session timed out. Please login again."));
+			Auth::Logout();
+			return redirect('login')->with('status', 'User session timed out. Please login again.');
+			// return view('auth.login')->with(array('notification' => "Session timed out. Please login again."));
 		
 		}
 
@@ -318,6 +337,12 @@ class AccountController extends Controller
 
     	$searchResults = $this->provider->searchProviders($input['search']);
 
+    	if ($searchResults === false) {
+
+    		Auth::Logout();
+			return redirect('login')->with('status', 'User session timed out. Please login again.');
+		}
+
 		// Logging the search to table search_log
     	DB::table('search_log')->insert(
     		['userId' => Auth::user()->id, 'yslUserId' => Auth::user()->yslUserId, 'date_time' => Carbon::now()->toDateTimeString(), 'ip' => \Request::ip(), 'searchWord' => $input['search']]
@@ -345,10 +370,15 @@ class AccountController extends Controller
     	
     	$provider = $this->provider->getProviderDetails($id);
   
+  		if (is_null($provider)) {
+  			return redirect('account/search')->with('status', 'Problem fetching financial institution. Please try searching again or report issue.');
+  		}
+
   		if ($provider === false) {
-  			return view('account.search')->withErrors('Problem fetching financial institution. Please try searching again or report issue.');
-    	}
-    	
+  			Auth::Logout();
+			return redirect('login')->with('status', 'User session timed out. Please login again.');
+  		}
+  		    	
     	$provider_ = reset($provider);
       	return view('account.add')->with('providerDetails', reset($provider_));
     	
@@ -366,15 +396,20 @@ class AccountController extends Controller
 
     	$provider = $this->provider->getProviderDetails($id);
 
-    	$provider = $this->provider->getProviderDetails($id);
-  
+  		if (is_null($provider)) {
+  			return redirect('account/search')->with('status', 'Problem fetching financial institution. Please try searching again or report issue.');
+  		}
+
   		if ($provider === false) {
-    		return view('account.search')->withErrors('Problem linking financial institution. Please try again or report issue.');
-    	}
+  			Auth::Logout();
+			return redirect('login')->with('status', 'User session timed out. Please login again.');
+  		}
+
     	$providerName = $provider['provider'][0]['name'];
 
-    	//$provider = json_encode($provider, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); // No longer needed as the reverse of this happening in parseAndPopulateProviderDetails
-    	    	    	
+    	// No longer needed as the reverse of this happening in parseAndPopulateProviderDetails
+    	// $provider = json_encode($provider, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); 
+
         $res = $this->cobrand->getPublicKey();
     	if(!empty($res['keyAsPemString'])) {
         	$publicKey = $res['keyAsPemString'];
@@ -387,7 +422,15 @@ class AccountController extends Controller
  		$mod_provider = $this->providerAccounts->parseAndPopulateProviderDetails($provider, $loginNameEncrypted, $passwordEncrypted);
 
  		$res = json_decode($this->providerAccounts->addProviderAccounts($mod_provider), true);
- 		$providerAccountId = $res['providerAccountId'];
+
+ 		if ($res === false) {
+
+ 			Auth::Logout();
+			return redirect('login')->with('status', 'User session timed out. Please login again.');
+
+ 		}
+
+ 		$providerAccountId = $res['providerAccount']['id'];
 
  		// Logging the provider data to provider_log
     	DB::table('provider_log')->insert(
