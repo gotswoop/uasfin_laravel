@@ -11,7 +11,6 @@ class User {
 	{
 
 		// SWOOP: Check if Cobrand Session is still active
-
 		$request = config('services.yodlee.user.registerUrl');
 
 		$params = array('registerParam' => '{ 
@@ -57,7 +56,6 @@ class User {
 		}
     }
 
-
 	public function login($cobrandSessionToken, $email, $password)
     {
 
@@ -91,6 +89,26 @@ class User {
 
     }
 
+    public function passwordReset($user, $cobrandSessionToken, $loginName, $newPassword) {
+
+    	// Getting User's password reset token
+        $userToken = $this->getToken($cobrandSessionToken, $loginName);
+
+        if ($userToken) {
+        	$res = $this->resetPasswordWithToken($cobrandSessionToken, $user, $userToken, $loginName, $newPassword);
+			if ($res === true) {
+				return true;
+			}
+        }
+        return false;
+
+    }
+
+    public function passwordUpdate($cobrandSessionToken, $userSessionToken) {
+
+    	// todo
+    	
+    }
     /**
     	Using this API to check if a Yodlee user's session is active
      */
@@ -151,5 +169,80 @@ class User {
 
 		}
     }
+
+    private function getToken($cobrandSessionToken, $loginName) {
+
+    	// TODO - get from config
+    	$request = 'https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/user/credentials/token';
+
+		$queryArgs = array();
+		$queryArgs['loginName']=$loginName;
+
+		if(count($queryArgs) > 0) {
+        	$request = $request.'?'.http_build_query($queryArgs, '', '&');
+		}
+
+	   	$responseObj = Utils::httpGet($request, $cobrandSessionToken, null);
+
+		if ( $responseObj['httpStatus'] == '200' ) {
+		
+			return $responseObj['body']['token'];
+
+		} else {
+
+			$err = array(
+				'datetime' => Carbon::now()->toDateTimeString(),
+				'ip' => \Request::ip(),
+				'userId' => Auth::user()->id, 
+				'yslUserId' => Auth::user()->yslUserId,	
+				'file' => __FILE__, 
+				'method' => __FUNCTION__, 
+				'event' => 'Searching Providers', 
+				'params' => $searchString, 
+			);
+			$error = array_merge($err, $responseObj['error']);
+			\Log::info(print_r($error, true));
+			$msg = 'Yodlee Error ' . $error['code'].' - "'.$error['message'].'"';
+			abort(500, $msg);
+
+		}
+    }
+
+    private function resetPasswordWithToken($cobrandSessionToken, $user, $userToken, $loginName, $newPassword) {
+
+    	// TODO - get from config
+    	$requestUrl = 'https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/user/credentials';
+
+    	$payload = array("loginName"=>$loginName, "token"=>$userToken, "newPassword"=> $newPassword);
+
+		$params = array('user'=>$payload);
+		$params = json_encode($params, JSON_UNESCAPED_UNICODE);
+			
+        $responseObj = Utils::httpPostCurl($requestUrl ,$params, $cobrandSessionToken, null);
+
+		if ( $responseObj['httpStatus'] == '204' ) {
+
+			return true;
+
+		} else {
+
+			$err = array(
+				'datetime' => Carbon::now()->toDateTimeString(),
+				'ip' => \Request::ip(),
+				'userId' => $user->id, 
+				'yslUserId' => $user->yslUserId,	
+				'file' => __FILE__, 
+				'method' => __FUNCTION__, 
+				'event' => 'Resetting Password with token', 
+				'params' => '', 
+			);
+			$error = array_merge($err, $responseObj); // THIS IS DIFF
+			\Log::info(print_r($error, true));
+			// $msg = 'Yodlee Error ' . $error['code'].' - "'.$error['message'].'"';
+			// abort(500, $msg);
+			return false;
+
+		}
+	}
 
 }

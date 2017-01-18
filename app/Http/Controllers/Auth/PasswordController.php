@@ -11,6 +11,9 @@ use Illuminate\Mail\Message;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 
+use App\Library\Yodlee\User;
+use App\Library\Yodlee\Cobrand;
+
 class PasswordController extends Controller
 {
     /*
@@ -50,6 +53,7 @@ class PasswordController extends Controller
      */
     public function reset(Request $request)
     {
+
 		// $this->validate($request, $this->getResetValidationRules());
         $this->validate(
             $request,
@@ -121,4 +125,40 @@ class PasswordController extends Controller
         return [];
     }
 
+    /**
+     * Reset the given user's password.
+     *
+     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
+     * @param  string  $password
+     * @return void
+     */
+    protected function resetPassword($user, $password)
+    {
+
+    	$yslUser = new User();
+    	$cobrand = new Cobrand();
+
+    	$cobrandSessionToken = $cobrand->login();
+    	$loginName = $user->email;
+
+    	$res = $yslUser->passwordReset($user, $cobrandSessionToken, $loginName, $password);
+
+    	if ($res === false) {
+
+    		return redirect('password/reset')->with('status', 'Unable to reset password. Please make sure the password is different from the current password and meets the requirements below.');
+
+    	} else {
+
+    		$user->password = bcrypt($password);
+
+    		$iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+			$user->suddi = base64_encode(openssl_encrypt($password, 'aes-256-cbc', $user->email, 0, $iv)).':'.base64_encode($iv);
+        
+        	$user->save();
+
+        	// this doesn't work for us
+	        // Auth::guard($this->getGuard())->login($user);
+	        return redirect('login')->with('status', 'Password changed successfully. Please login with your new password to continue');
+    	}
+    }
 }

@@ -115,6 +115,8 @@
 					<li>At least 8 characters long</li>
 					<li>Contain at least one upper case letter and one number</li>
 					<li>Contain any of these special characters ! @ # $ % ^ & * ( ) </li>
+					<li>Cannot be same as the email</li>
+					<li>Cannot contain more than two recurring characters (e.g. aaa123 is an invalid password)</li>
 					<li>Cannot contain ] and .</li>
 				</ul>
 			</div>
