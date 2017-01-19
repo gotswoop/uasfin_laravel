@@ -40,9 +40,11 @@ class ProviderAccounts {
 
 			$params = $params['provider'][0]['loginForm'];
 			$params = array('loginForm'=>$params);
-			// $params = json_encode($params, JSON_UNESCAPED_UNICODE);
 			
-			$responseObj = Utils::httpPost($requestUrl, $params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);	
+			
+			$responseObj = Utils::httpPost($requestUrl, $params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
+			
+			// $params = json_encode($params, JSON_UNESCAPED_UNICODE);
 	        //$responseObj = Utils::httpPostCurl($requestUrl ,$params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 
 			if ( $responseObj['httpStatus'] == '201' ) {
@@ -51,13 +53,20 @@ class ProviderAccounts {
 
 			} else {
 
-				dd($responseObj);
-				// There is no error here!
-
-				$err = array('file' => __FILE__, 'method' => __FUNCTION__, 'event' => 'Adding account to UASFIN'); 
+				$err = array(
+					'datetime' => Carbon::now()->toDateTimeString(),
+					'ip' => \Request::ip(),
+					'userId' => Auth::user()->id, 
+					'yslUserId' => Auth::user()->yslUserId,
+					'file' => __FILE__, 
+					'method' => __FUNCTION__, 
+					'event' => 'Adding Provider Account', 
+					'params' => json_encode($params), 
+				);
 				$error = array_merge($err, $responseObj['error']);
-				dd($error);
-
+				\Log::info(print_r($error, true));
+				$msg = 'Yodlee Error ' . $error['code'].' - "'.$error['message'].'"';
+				abort(500, $msg);
 
 			}
 
@@ -127,8 +136,35 @@ class ProviderAccounts {
 			$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 				
 			if ( $responseObj['httpStatus'] == '200' ) {
+			
+				$res = $responseObj['body']['providerAccount']['refreshInfo'];
+
+				$refresh = array();
 				
-				return $responseObj['body'];
+				$refresh['statusCode'] = $res['statusCode'];
+				$refresh['status'] = $res['status'];
+				$refresh['statusMessage'] = $res['statusMessage'];
+				$refresh['additionalStatus'] = '';
+				$refresh['actionRequired'] = '';
+				$refresh['message'] = '';
+				$refresh['additionalInfo'] = '';
+				
+				if (array_key_exists('additionalStatus', $res)) {
+					$refresh['additionalStatus'] = $res['additionalStatus'];	
+				}
+				
+				// Are these three ever returned for this call?
+				if (array_key_exists('actionRequired', $res)) {
+					$refresh['actionRequired'] = $res['actionRequired'];
+				}
+				if (array_key_exists('message', $res)) {
+					$refresh['message'] = $res['message'];
+				}
+				if (array_key_exists('additionalInfo', $res)) {
+					$refresh['additionalInfo'] = $res['additionalInfo'];	
+				}
+								
+				return $refresh;   		
 				
 			} else {
 

@@ -46,7 +46,7 @@ Route::group(['middleware' => 'web'], function () {
 	Route::get('/account/search', 'AccountController@searchAccountGET');
 	Route::post('/account/search', 'AccountController@searchAccountPOST');
 
-	Route::get('/account/status/{id?}', 'AccountController@checkStatus');
+	Route::get('/account/status', 'AccountController@checkStatus');
 
 	Route::get('/account/remove/{id}', 'AccountController@removeProvider');
 

