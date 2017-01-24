@@ -16,7 +16,7 @@ class ProviderAccounts {
      */
     public function __construct(User $yodleeUser)
     {
-    	$this->yodleeUser = $yodleeUser; // SWOOP: Is this required?
+    	$this->yodleeUser = $yodleeUser;
     }
 
     /*	

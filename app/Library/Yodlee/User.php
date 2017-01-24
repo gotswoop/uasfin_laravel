@@ -142,7 +142,7 @@ class User {
 	*/
     public function logout($cobrandSessionToken, $userSessionToken)
     {
-    	if ( $this->yodleeUser->isActive() ) { // Checking if user is active
+    	if ( $this->isActive() ) { // Checking if user is active
 
 	    	$requestUrl = config('services.yodlee.user.logoutUrl');
 

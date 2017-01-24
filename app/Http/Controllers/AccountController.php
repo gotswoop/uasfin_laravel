@@ -54,8 +54,10 @@ class AccountController extends Controller
 		// Fetching all accounts for the user
 		$accounts = $this->account->getAllAccounts();
 
-		if ($accounts === false) 
+		if ($accounts === false) {
 			$this->userSessionTimeout();
+			return;
+		}
 		
 		if (array_key_exists('account', $accounts)) { // populating data for dashboard if user has accounts.
 		        	
@@ -116,8 +118,10 @@ class AccountController extends Controller
 
 			$res = $this->providerAccounts->deleteProviderAccounts($providerId); 
 
-			if ($res === false)
+			if ($res === false) {
 				$this->userSessionTimeout();
+				return;
+			}
 
 			if ($res) {
 				 
@@ -141,8 +145,10 @@ class AccountController extends Controller
 	
 		$accounts = $this->providerAccounts->getProviderAccounts();
 
-		if ($accounts === false)
+		if ($accounts === false) {
 			$this->userSessionTimeout();
+			return;
+		}
 
 		if (isset($accounts['providerAccount'])) {	// Display secret status page
 			
@@ -169,8 +175,10 @@ class AccountController extends Controller
      	$accountSummary = $this->account->getSummary($id, $container);
      	$accountDetails = $this->account->getTransactions($id);
      	
-     	if ($accountSummary === false || $accountDetails === false)
+     	if ($accountSummary === false || $accountDetails === false) {
      		$this->userSessionTimeout();
+     		return;
+     	}
 		
 		if (isset($accountDetails['transaction'])) {
 
@@ -219,8 +227,10 @@ class AccountController extends Controller
 
     	$searchResults = $this->provider->searchProviders($input['search']);
 
-    	if ($searchResults === false)
+    	if ($searchResults === false) {
     		$this->userSessionTimeout();
+    		return;
+    	}
 
 		// Logging the search to table search_log
     	DB::table('search_log')->insert(
@@ -253,8 +263,10 @@ class AccountController extends Controller
   			return redirect('account/search')->with('status', 'Problem fetching financial institution. Please try searching again or report issue.');
   		}
 
-  		if ($providerObj === false)
+  		if ($providerObj === false) {
   			$this->userSessionTimeout();
+  			return;
+  		}
   		    	
     	$providerObj = reset($providerObj);
       	return view('account.add')->with('providerDetails', reset($providerObj));
@@ -278,8 +290,10 @@ class AccountController extends Controller
   			return redirect('account/search')->with('status', 'Problem fetching financial institution. Please try searching again or report issue.');
   		}
 
-  		if ($provider_Res === false)
+  		if ($provider_Res === false){
 			$this->userSessionTimeout();
+			return;
+  		}
 
     	$providerName = $provider_Res['provider'][0]['name'];
 	
@@ -298,8 +312,10 @@ class AccountController extends Controller
  		// Add once
  		$add_Res = $this->providerAccounts->addProviderAccounts($mod_provider);
 
- 		if ($add_Res === false) 
+ 		if ($add_Res === false) {
  			$this->userSessionTimeout();
+ 			return;
+ 		}
 
  		$providerAccountId = $add_Res['providerAccount']['id'];
 
@@ -307,8 +323,10 @@ class AccountController extends Controller
 
  		// First time refresh
  		$refresh_Res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
-		if ($refresh_Res === false)
+		if ($refresh_Res === false) {
 			$this->userSessionTimeout();
+			return;
+		}
 		
 		$status = $refresh_Res['status'];
 		$statusCode = $refresh_Res['statusCode'];
@@ -338,8 +356,10 @@ class AccountController extends Controller
 
 			// Repeated refreshes
 			$refresh_Res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
-			if ($refresh_Res === false)
+			if ($refresh_Res === false) {
 				$this->userSessionTimeout();
+				return;
+			}
 			
 			$status = $refresh_Res['status'];
 			$statusCode = $refresh_Res['statusCode'];
