@@ -28,9 +28,8 @@ class Provider {
     public function searchProviders($searchString) 
 	{
 
-		// Checking if user is active
-		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
-			
+		if ( $this->yodleeUser->isActive() ) { // Checking if user is active
+
 			$request = config('services.yodlee.providers.url');
 
 			$queryArgs = array();
@@ -82,10 +81,9 @@ class Provider {
 	public function getProviderDetails($providerId) 
 	{
 
-		// SWOOP - Clean input ($providerId)
+		// TODO: Clean input ($providerId)
 
-		// Checking if user is active
-		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
+		if ( $this->yodleeUser->isActive() ) { // Checking if user is active
 
 			$request = config('services.yodlee.providers.url'). '/' .$providerId;
 

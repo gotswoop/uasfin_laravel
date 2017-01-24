@@ -16,7 +16,7 @@ class Account {
      */
     public function __construct(User $yodleeUser)
     {
-    	$this->yodleeUser = $yodleeUser; // SWOOP: Is this required?
+    	$this->yodleeUser = $yodleeUser;
     }
 
 	/**
@@ -27,8 +27,7 @@ class Account {
 	public function getAllAccounts() 
 	{
 
-		// Checking if user is active
-		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
+		if ( $this->yodleeUser->isActive() ) { // Checking if user is active
 
 			$request = config('services.yodlee.accounts.url');
 
@@ -72,10 +71,9 @@ class Account {
 	public function getSummary($accountId, $container) 
 	{
 
-		// Checking if user is active
-		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
+		if ( $this->yodleeUser->isActive() ) { // Checking if user is active
 
-			// SWOOP: Clean input ($accoundId)
+			// TODO: Clean input ($accoundId)
 			$request = config('services.yodlee.accounts.url'). '/' . $accountId.'?container='.$container;
 			
 			$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
@@ -117,9 +115,9 @@ class Account {
 	 */
     public function getTransactions($accountId) 
 	{
-		// Checking if user is active
-		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
-			// SWOOP: Clean input ($accoundId)
+		if ( $this->yodleeUser->isActive() ) { // Checking if user is active
+
+			// TODO: Clean input ($accoundId)
 			$request = config('services.yodlee.transactions.url'). '?accountId=' . $accountId;
 			
 			$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
@@ -166,9 +164,8 @@ class Account {
     public function getNetWorth() 
 	{
 
-		// Checking if user is active
-		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
-
+		if ( $this->yodleeUser->isActive() ) { // Checking if user is active
+			
 			$request = config('services.yodlee.netWorthUrl').'?accoundIds=10050740';
 
 			$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);

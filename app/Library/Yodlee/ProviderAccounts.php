@@ -26,8 +26,7 @@ class ProviderAccounts {
     function addProviderAccounts($params)
     {
 
-    	// Checking if user is active
-		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
+    	if ( $this->yodleeUser->isActive() ) { // Checking if user is active
 		
 			$requestUrl = config('services.yodlee.providerAccounts.url');
 
@@ -84,8 +83,7 @@ class ProviderAccounts {
 	public function getProviderAccounts() 
 	{
 
-		// Checking if user is active
-		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
+		if ( $this->yodleeUser->isActive() ) { // Checking if user is active
 
 			$request = config('services.yodlee.providerAccounts.url');
 			
@@ -127,8 +125,7 @@ class ProviderAccounts {
 	public function getProviderAccountDetails($providerAccountId) 
 	{
 
-		// Checking if user is active
-		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
+		if ( $this->yodleeUser->isActive() ) { // Checking if user is active
 
 			$request = config('services.yodlee.providerAccounts.url'). '/'.$providerAccountId;
 			
@@ -200,9 +197,8 @@ class ProviderAccounts {
 	public function deleteProviderAccounts($providerId) 
 	{
 
-		// Checking if user is active
-		if ( $this->yodleeUser->isActive( Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken ) ) {
-
+		if ( $this->yodleeUser->isActive() ) { // Checking if user is active
+			
 			$params = array('providerAccountId' => $providerId);
 
 			$request = config('services.yodlee.providerAccounts.url'). '/'.$providerId;

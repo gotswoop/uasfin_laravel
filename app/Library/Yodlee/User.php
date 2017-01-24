@@ -118,7 +118,7 @@ class User {
     /*
     * Determining if the user is active based on user's Yodlee session time being < 25 mins old.
     */
-    public function isActive($cobrandSessionToken, $userSessionToken)
+    public function isActive()
     {
 
     	$user_id = Auth::user()->id;
@@ -142,8 +142,7 @@ class User {
 	*/
     public function logout($cobrandSessionToken, $userSessionToken)
     {
-    	// Checking if YSL User session is still active
-    	if ( $this->isActive($cobrandSessionToken, $userSessionToken) ) {
+    	if ( $this->yodleeUser->isActive() ) { // Checking if user is active
 
 	    	$requestUrl = config('services.yodlee.user.logoutUrl');
 
