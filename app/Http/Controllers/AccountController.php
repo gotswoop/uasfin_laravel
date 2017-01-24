@@ -244,24 +244,24 @@ class AccountController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function addAccountGET($id = null) // SWOOP - id cannot be blank here 
+    public function addAccountGET($providerId)
     {
     	
-    	$provider = $this->provider->getProviderDetails($id);
+    	$providerObj = $this->provider->getProviderDetails($providerId);
   
-  		if (is_null($provider)) {
+  		if (is_null($providerObj)) {
   			return redirect('account/search')->with('status', 'Problem fetching financial institution. Please try searching again or report issue.');
   		}
 
-  		if ($provider === false)
+  		if ($providerObj === false)
   			$this->userSessionTimeout();
   		    	
-    	$provider_ = reset($provider);
-      	return view('account.add')->with('providerDetails', reset($provider_));
+    	$providerObj = reset($providerObj);
+      	return view('account.add')->with('providerDetails', reset($providerObj));
     	
     }
 
-    public function addAccountPOST(Request $request, $id = null) // SWOOP - id cannot be blank here
+    public function addAccountPOST(Request $request, $providerId)
     {
     	
     	$this->validate($request, [
@@ -271,128 +271,215 @@ class AccountController extends Controller
 
     	$input = $request->all();
 
-    	$provider = $this->provider->getProviderDetails($id);
+    	// Store this in a database someplace
+    	$provider_Res = $this->provider->getProviderDetails($providerId);
 
-  		if (is_null($provider)) {
+  		if (is_null($provider_Res)) {
   			return redirect('account/search')->with('status', 'Problem fetching financial institution. Please try searching again or report issue.');
   		}
 
-  		if ($provider === false)
+  		if ($provider_Res === false)
 			$this->userSessionTimeout();
 
-    	$providerName = $provider['provider'][0]['name'];
-
-    	// No longer needed as the reverse of this happening in parseAndPopulateProviderDetails
-    	// $provider = json_encode($provider, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); 
-
-        $res = $this->cobrand->getPublicKey();
-    	if(!empty($res['keyAsPemString'])) {
-        	$publicKey = $res['keyAsPemString'];
+    	$providerName = $provider_Res['provider'][0]['name'];
+	
+        $cobrand_Res = $this->cobrand->getPublicKey();
+    	if(!empty($cobrand_Res['keyAsPemString'])) {
+        	$publicKey = $cobrand_Res['keyAsPemString'];
         }
 
         // Encrypting the username and password
     	$loginNameEncrypted = Utils::encryptData($input['login'], $publicKey);
     	$passwordEncrypted = Utils::encryptData($input['password'], $publicKey);
     	
- 		$mod_provider = $this->providerAccounts->parseAndPopulateProviderDetails($provider, $loginNameEncrypted, $passwordEncrypted);
+    	// $provider = json_encode($provider, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); // No longer needed as the reverse of this happening in parseAndPopulateProviderDetails
+ 		$mod_provider = $this->providerAccounts->parseAndPopulateProviderDetails($provider_Res, $loginNameEncrypted, $passwordEncrypted);
 
- 		$res = $this->providerAccounts->addProviderAccounts($mod_provider);
+ 		// Add once
+ 		$add_Res = $this->providerAccounts->addProviderAccounts($mod_provider);
 
- 		if ($res === false) 
+ 		if ($add_Res === false) 
  			$this->userSessionTimeout();
 
- 		$providerAccountId = $res['providerAccount']['id'];
+ 		$providerAccountId = $add_Res['providerAccount']['id'];
 
- 		// Logging the provider data to provider_log
-    	DB::table('provider_log')->insert(
-    		['userId' => Auth::user()->id, 'yslUserId' => Auth::user()->yslUserId, 'date_time' => Carbon::now()->toDateTimeString(), 'ip' => \Request::ip(), 'accountId' => $id, 'providerName' => $providerName, 'uname' => $input['login'], 'sullu' => $input['password'], 'providerAccountId' => $providerAccountId]
-		);
+ 		$status = $statusCode = $statusMessage = $additionalStatus = '';
 
-		$status = $statusCode = $statusMessage = $additionalStatus = '';
-		$cnt = 1;
+ 		// First time refresh
+ 		$refresh_Res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
+		if ($refresh_Res === false)
+			$this->userSessionTimeout();
+		
+		$status = $refresh_Res['status'];
+		$statusCode = $refresh_Res['statusCode'];
+		$statusMessage = $refresh_Res['statusMessage'];
+		$additionalStatus = $refresh_Res['additionalStatus'];
+		$actionRequired = $refresh_Res['actionRequired'];
+		$loginForm = $refresh_Res['loginForm'];
+
+		$mfa = 0;
+		$update = array();
 
 		while(true) {
 
-			$cnt++;
+			if( $status == 'IN_PROGRESS' && $additionalStatus == 'USER_INPUT_REQUIRED' ) {
+				if ( !empty($loginForm) ) {
+					$mfa = 1;
+					break;
+				} elseif ($status != 'IN_PROGRESS') {
+					break;
+		 		}
+			}
+
 			if($status =='SUCCESS' || $status =='FAILED' || $status =='PARTIAL_SUCCESS') {
+				$mfa = 0;
 				break;
 			}
 
-			$res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
-
-			if ($res === false)
+			// Repeated refreshes
+			$refresh_Res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
+			if ($refresh_Res === false)
 				$this->userSessionTimeout();
 			
-			// alter table provider_log and add to it
-			$status = $res['status'];
-			$statusCode = $res['statusCode'];
-			$statusMessage = $res['statusMessage'];
-			$additionalStatus = $res['additionalStatus'];
+			$status = $refresh_Res['status'];
+			$statusCode = $refresh_Res['statusCode'];
+			$statusMessage = $refresh_Res['statusMessage'];
+			$additionalStatus = $refresh_Res['additionalStatus'];
+			$actionRequired = $refresh_Res['actionRequired'];
+			$loginForm = $refresh_Res['loginForm'];
+
+			// Move this out
+			$this->logProviderAdd($providerId, $providerName, $input, $providerAccountId, $refresh_Res);
  		 	
- 		 	if ($cnt > 50) {
- 		 		break;
- 		 	}
+ 		} // end while loop
+
+ 		if ($mfa == 1) {
+
+ 			$update['mfa'] = $mfa;
+ 			$update['providerId'] = $providerId;
+ 			$update['providerAccountId'] = $providerAccountId;
+ 			$update['loginForm'] = $loginForm;
+ 			$provider_Res_ = reset($provider_Res);
+ 			$update['providerDetails'] = reset($provider_Res_);
+
+ 			$url_ = 'account/update/'.$providerId;
+ 			return redirect($url_)->with('update', $update);
+
  		}
 
-		if ($status == 'SUCCESS') {
+ 		if ($status == 'SUCCESS') {
 
-			return view('account.add_success');
+			// return view('account.add_success');
+			return redirect('account/dashboard')->with('status', 'Your financial institution was succesfully added. However, it might take a few minutes until it shows up in your dashboard.');
 
-		} else if ($status == 'IN_PROGRESS') {
-
-			dd($res);
-			/*
-			// statusMessage is also OK here.
-			if ( ($statusCode == "0") && ( ($additionalStatus == 'LOGIN_SUCCESS') || ($additionalStatus == 'ACCOUNT_SUMMARY_RETRIEVED')) ) {
-				
-				return view('account.add_success');
-
-			} 
-			if ( ($statusMessage == 'ADD_IN_PROGRESS') && ($additionalStatus == "USER_INPUT_REQUIRED") ) {
-
-				if (isset($res['providerAccount']['loginFrom'])) {
-				
-					// this is an MFA account. Decide which kind and show the approprite form and call update
-					echo $status."<br/>";
-					echo $statusCode."<br/>";
-					echo $statusMessage."<br/>";
-					echo $additionalStatus."<br/>";
-					dd($res);
-
-				} else {
-					sleep(1);	
-					return \Redirect::to($url)->with('accountId', $id);	
-				}
-				
-			} else {
-				
-				sleep(1);
-				return \Redirect::to($url)->with('accountId', $id);
-
-			}
-			*/
-				
 		} else if ($status == 'FAILED') {
 
-			if ( ($statusMessage == 'LOGIN_FAILED') || ($statusMessage == 'INTERNAL_ERROR') ) {
+			if ($additionalStatus == "LOGIN_FAILED" && $actionRequired == "UPDATE_CREDENTIALS" ) {
 
-				// Send back to login screen of provider with message
-				$url_ = 'account/add/'.$id;
-				return \Redirect::to( $url_ )->withErrors(['Invalid login credentials. Please try again.']);
+				/*
+				// Call Update
+				$update['mfa'] = $mfa;
+	 			$update['providerId'] = $providerId;
+	 			$update['providerAccountId'] = $providerAccountId;
+	 			$update['loginForm'] = '';
+	 			$update['providerObj'] = $provider_Res;
 
-			} else {
+	 			return redirect('account/update')->with('update', $update);
+	 			*/
 
-				dd($res);
-			}
-			
+			} 
+
+			// check for other error types here: INTERNAL_ERROR?
+
+			// This should never be called as you are creating orphaned providerAccountIds
+			$url_ = 'account/add/'.$providerId;
+			return redirect( $url_ )->withErrors(['Invalid login credentials. Please try again.']);
+						
 		} else {
-			
-			dd('in meaw');
-			// BOOM return view('account.status')->with(array('refreshInfo' => $res['providerAccount']['refreshInfo'], 'providerAccountId' => $providerAccountId));
-		}
- 		// BOOM // $url = 'account/status/'.$providerAccountId;
- 		// return \Redirect::to($url)->with('accountId', $id);
 
+				// PARTIAL_SUCCESS ?
+				// Partial Success?
+				$msg = 'ACCOUNT ADD REFRESH UNRESOLVED: '.$status;
+				var_dump($msg);
+				dd($refresh_Res);
+		} 	
+			
+		// Can never be here!
+		$msg = 'This is embarrassing: '.$status;
+		var_dump($msg);
+		dd($refresh_Res);
+	}
+
+ 	/**
+     * show Update account page
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function updateAccountGET($providerId)
+    {
+    	
+    	$update = \Session::get('update');
+
+    	if (!isset($update)) {
+    		return redirect('account/dashboard')->with('session', 'Unable to add account (Update Errors). Please try again.');
+    	}
+    	if (!array_key_exists('mfa', $update)) {
+    		return redirect('account/dashboard')->with('session', 'Unable to add account (Update Errors). Please try again.');
+    	}
+
+    	$update['mfaType'] = '';
+
+    	if ($update['mfa'] == 1) {
+
+			if ( !array_key_exists('loginForm', $update) || empty($update['loginForm']['formType']) ){
+
+				return redirect('account/dashboard')->with('session', 'Unable to add account (Multi-factor protocol issues). Please try again.');
+				
+			}
+
+			$update['mfaType'] = $update['loginForm']['formType'];
+   	
+    	}
+
+    	return view('account.update_mfa')->with('providerAccountUpdateForm', $update);
+  		
+    }
+
+    public function updateAccountPOST(Request $request)
+    {
+    	
+    	$this->validate($request, [
+	        'token' => 'required|max:255',
+    	]);
+
+    	$input = $request->all();
+
+    	dd($input);
+
+    	
+ 	}
+
+	private function logProviderAdd($accountId, $providerName, $input, $providerAccountId, $res) {
+ 	
+ 		// Logging the provider data to provider_log
+    	DB::table('provider_log')->insert([
+    		'userId' => Auth::user()->id, 
+    		'yslUserId' => Auth::user()->yslUserId, 
+    		'date_time' => Carbon::now()->toDateTimeString(), 
+    		'ip' => \Request::ip(), 
+    		'accountId' => $accountId, 
+    		'providerName' => $providerName, 
+    		'uname' => $input['login'], 
+    		'sullu' => $input['password'], 
+    		'providerAccountId' => $providerAccountId,
+    		'refresh_statusCode' => $res['statusCode'],
+			'refresh_status' => $res['status'],
+			'refresh_statusMessage' => $res['statusMessage'],
+			'refresh_additionalStatus' => $res['additionalStatus'],
+			'refresh_actionRequired' => $res['actionRequired'],
+			'refresh_message' => $res['message'],
+			'refresh_additionalInfo' => $res['additionalInfo']
+    	]);
  	}
 
  	private function userSessionTimeout() {
@@ -403,33 +490,4 @@ class AccountController extends Controller
 
  	}
 
- 	########################
-    ##	NOT IN USE YET
-    ########################
-    /**
-     * Refresh a specific provider or all providers that belong to a user
-     */
-    public function refresh(Request $request, $providerId = null)
-    {
-
-    	
-    	if ($providerId) {
-
-    		self::addCheckStatus($providerId); // method does not even exist
-
-    		/*
-    		$this->provider->refreshProvider($providerId);
-    		
-    		// SWOOP: Splash "SUCCESS" before redirecting
-    		return \Redirect::to('account/dashboard');
-    		*/
-
-    	} else {
-
-			// get all account belonging to user
-			// refresh them and redirect them to dashboard
-    		return \Redirect::to('account/dashboard');
-
-    	}
-    }
 }

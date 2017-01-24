@@ -49,8 +49,9 @@ class AuthLogoutEventListener
         	if ($res) {
                 $userToUpdate = $this->user->where('email', '=', $user->user->email)->first();
                 $userToUpdate->update([
+                	'yslCobrandSessionToken' => '',
                     'yslUserSessionToken' => '',
-                    'yslUserSessionToken_date' => '',
+                    'yslUserSessionToken_date' => '2015-11-22 01:17:00',
                 ]);
             }
 	    }

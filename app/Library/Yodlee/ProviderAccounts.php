@@ -41,7 +41,6 @@ class ProviderAccounts {
 			$params = $params['provider'][0]['loginForm'];
 			$params = array('loginForm'=>$params);
 			
-			
 			$responseObj = Utils::httpPost($requestUrl, $params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 			
 			// $params = json_encode($params, JSON_UNESCAPED_UNICODE);
@@ -134,36 +133,44 @@ class ProviderAccounts {
 			$request = config('services.yodlee.providerAccounts.url'). '/'.$providerAccountId;
 			
 			$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
-				
-			if ( $responseObj['httpStatus'] == '200' ) {
-			
-				$res = $responseObj['body']['providerAccount']['refreshInfo'];
 
+			
+			if ( $responseObj['httpStatus'] == '200' ) {
+
+				$res = $responseObj['body']['providerAccount'];
+				
 				$refresh = array();
 				
-				$refresh['statusCode'] = $res['statusCode'];
-				$refresh['status'] = $res['status'];
-				$refresh['statusMessage'] = $res['statusMessage'];
+				$refresh['statusCode'] = $res['refreshInfo']['statusCode'];
+				$refresh['status'] = $res['refreshInfo']['status'];
+				$refresh['statusMessage'] = $res['refreshInfo']['statusMessage'];
+				
 				$refresh['additionalStatus'] = '';
+				if (array_key_exists('additionalStatus', $res['refreshInfo'])) {
+					$refresh['additionalStatus'] = $res['refreshInfo']['additionalStatus'];	
+				}
+				
 				$refresh['actionRequired'] = '';
+				if (array_key_exists('actionRequired', $res['refreshInfo'])) {
+					$refresh['actionRequired'] = $res['refreshInfo']['actionRequired'];
+				}
+
 				$refresh['message'] = '';
+				if (array_key_exists('message', $res['refreshInfo'])) {
+					$refresh['message'] = $res['refreshInfo']['message'];
+				}
+				
+				// Is this ever returned for this call?
 				$refresh['additionalInfo'] = '';
-				
-				if (array_key_exists('additionalStatus', $res)) {
-					$refresh['additionalStatus'] = $res['additionalStatus'];	
+				if (array_key_exists('additionalInfo', $res['refreshInfo'])) {
+					$refresh['additionalInfo'] = $res['refreshInfo']['additionalInfo'];	
 				}
-				
-				// Are these three ever returned for this call?
-				if (array_key_exists('actionRequired', $res)) {
-					$refresh['actionRequired'] = $res['actionRequired'];
+
+				$refresh['loginForm'] = '';
+				if (array_key_exists('loginForm', $res)) {
+					$refresh['loginForm'] = $res['loginForm'];
 				}
-				if (array_key_exists('message', $res)) {
-					$refresh['message'] = $res['message'];
-				}
-				if (array_key_exists('additionalInfo', $res)) {
-					$refresh['additionalInfo'] = $res['additionalInfo'];	
-				}
-								
+							
 				return $refresh;   		
 				
 			} else {
@@ -185,7 +192,6 @@ class ProviderAccounts {
 			}
 		
 		} else {
-
 			return false;
 		}
 	}
