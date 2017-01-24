@@ -8,7 +8,7 @@
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
         	<div class="alert alert-info">
-               	<h4><strong>Step 3: </strong><br/><br/>Please use the "{!! $form['loginForm']['row'][0]['label'] !!}" and "{!! $form['loginForm']['row'][1]['label'] !!}" for 
+               	<h4><strong>Step 3: </strong><br/><br/>Please enter the "{!! $form['loginForm']['row'][0]['label'] !!}" and "{!! $form['loginForm']['row'][1]['label'] !!}" for 
   				@if ( isset($form['baseUrl']) )
                		<a href="{{ $form['baseUrl'] }}" target="_blank"><strong>{{ $form['name'] }}</strong></a>
                	@else
@@ -61,27 +61,7 @@
 	                		<strong>Help from {{ $form['name'] }}:  </strong><br/><?php echo htmlspecialchars_decode(stripslashes($form['help'])); ?>
 	                	</p>
 	                @endif
-	                </div>
-				    @if (isset($data))
-	                	@if ($data['size'])
-	                	    <table class="table table-striped">
-		                    	<tr>
-		                       		<th>Name</th>
-		                       		<th>Accounts / Services</th>
-		                    		<th>Add</th>
-		                    	</tr>
-		                    	@foreach ($data['providers'] as $provider)
-		                    		<tr>
-		                    		<td> {{ $provider['name'] }} </td>
-		                    		<td> Categories </td>
-									<td><a href="/account/login/{{ $provider['id'] }}"><button type="button" class="btn btn-sm btn-warning">+</button></a></td>
-									</tr>
-								@endforeach
-							</table>
-						@else
-							<div class="alert alert-warning">No matches found. Please search again.</div>
-						@endif
-					@endif
+	                </div> 
                 </div>
             </div>
         </div>
