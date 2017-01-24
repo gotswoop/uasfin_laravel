@@ -139,7 +139,7 @@ class Provider {
 		if ( $responseObj['httpStatus'] == '200' ) {
 			return $responseObj['body'];
 		} else {
-			dd($responseObj['error']);
+			// dd($responseObj['error']);
 		}
 	}
 
@@ -158,7 +158,7 @@ class Provider {
 
 		} else {
 
-			dd($responseObj['error']);
+			// dd($responseObj['error']);
 
 		}
 	}

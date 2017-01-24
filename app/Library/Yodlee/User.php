@@ -5,6 +5,8 @@ namespace App\Library\Yodlee;
 use Auth;
 use Carbon\Carbon;
 
+use App\User as UserModel;
+
 class User {
 
 	/*
@@ -86,7 +88,6 @@ class User {
   			Handle error when case is user exists on local db but not on Yodlee.
   			*/
 
-  			// dd($responseObj['error']); 
   			return false;
 		}   
 
@@ -114,21 +115,24 @@ class User {
     	// todo
     	
     }
-    /**
-    	Using this API to check if a Yodlee user's session is active
-     */
+    /*
+    * Determining if the user is active based on user's Yodlee session time being < 25 mins old.
+    */
     public function isActive($cobrandSessionToken, $userSessionToken)
     {
 
-    	$request = config('services.yodlee.user.detailsUrl');
+    	$user_id = Auth::user()->id;
+    	
+    	// Checking if userSession is active (25 mins)
+		$user = UserModel::getSession($user_id);
 
-		$responseObj = Utils::httpGet($request, $cobrandSessionToken, $userSessionToken);
+		if (array_key_exists('yslUserSessionToken', $user)) {
+			
+			if (!empty($user['yslUserSessionToken'])) {
 
-		if ( $responseObj['httpStatus'] == '200' ) {
-
-			return true;
-
-		}
+				return true;
+			}
+		} 
 
 		return false;
     }

@@ -154,6 +154,12 @@ class Account {
 		}
     }
 
+    public function deleteAccount($accountId) {
+
+    	// delete a specific account within a provider
+
+    }
+
     ########################
     ##	NOT IN USE YET
     ########################
@@ -175,7 +181,7 @@ class Account {
 
 				$err = array('file' => __FILE__, 'method' => __FUNCTION__, 'event' => 'Getting net worth for user'); 
 				$error = array_merge($err, $responseObj['error']);
-				dd($error);
+				// dd($error);
 
 			}
 

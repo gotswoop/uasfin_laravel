@@ -32,32 +32,16 @@ class User extends Authenticatable
     protected $dates = [
         'join_date', 'last_login_date', 'yslUserSessionToken_date',
     ];
-}
 
-/*
-// Created using Migrations
-CREATE TABLE `users` (
-  `id` int(10) unsigned NOT NULL AUTO_INCREMENT,
-  `firstName` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `lastName` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `email` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `password` varchar(60) COLLATE utf8_unicode_ci NOT NULL,
-  `suddi` varchar(100) COLLATE utf8_unicode_ci NOT NULL,
-  `join_date` datetime NOT NULL,
-  `last_login_date` datetime NOT NULL,
-  `regIP` varchar(15) COLLATE utf8_unicode_ci NOT NULL,
-  `salt` varchar(32) COLLATE utf8_unicode_ci NOT NULL,
-  `comminication` tinyint(4) NOT NULL,
-  `usertype` tinyint(4) NOT NULL,
-  `access` tinyint(4) NOT NULL,
-  `settings` blob NOT NULL,
-  `yslUserId` int(11) NOT NULL,
-  `yslUserSessionToken` varchar(255) COLLATE utf8_unicode_ci NOT NULL,
-  `yslUserSessionToken_date` datetime NOT NULL,
-  `remember_token` varchar(100) COLLATE utf8_unicode_ci DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `users_email_unique` (`email`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
-*/
+    public static function getSession($user_id)
+    {
+    	// returning user session that's less than 25 minutes (1500 seconds) old
+    	$sql = 'SELECT id, yslUserSessionToken, yslUserSessionToken_date FROM users WHERE UNIX_TIMESTAMP(NOW())-UNIX_TIMESTAMP(yslUserSessionToken_date) < 1500 AND id = '. $user_id;
+
+    	$result = \DB::select($sql);
+
+    	$result = reset($result); // only need the first element of the array $result[0] which is a StdClass Object
+
+    	return (array) $result; //converting the stdClass object to array
+    }
+}

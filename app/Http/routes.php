@@ -50,12 +50,11 @@ Route::group(['middleware' => 'web'], function () {
 
 	Route::get('/account/remove/{id}', 'AccountController@removeProvider');
 
-	// Route::get('/account/refresh/{id?}', 'AccountController@refresh');
-
-	// Route::get('/refresh/{id}', 'AccountController@refresh');
-
 	Route::get('/account/add/{id}', 'AccountController@addAccountGET');
 	Route::post('/account/add/{id}', 'AccountController@addAccountPOST');
+	
+	Route::get('/account/update/{id}', 'AccountController@updateAccountGET');
+	Route::post('/account/update/{id}', 'AccountController@updateAccountPOST');
 	
 	Route::get('/account/details/{id}', 'AccountController@details');
 
