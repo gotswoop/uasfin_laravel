@@ -3,23 +3,26 @@
 @section('content')
 
 {{-- */ 
-$form = $providerAccountUpdateForm;  
+$form = $providerAccountUpdateForm;
 $provider = $form['providerDetails'];
 $providerAccountUpdateFormJSON = htmlspecialchars(json_encode($providerAccountUpdateForm));
+$questions = $form['loginForm']['row'];
+$number_of_questions = sizeof($questions);
 // dd($form);
 /*--}}
-<?php //dd($form); ?>
+<?php //dd($questions); ?>
 <div class="container">
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
         	<div class="alert alert-info">
-               	<h4><strong>Multi-Factor Authentication</strong><br/><br/>
+               	<h4><strong>Step4: Multi-factor Authentication (MFA)</strong><br/><br/>
+               	Message from 
   				@if ( isset($provider['baseUrl']) )
                		<a href="{{ $provider['baseUrl'] }}" target="_blank"><strong>{{ $provider['name'] }}</strong> </a>
                	@else
                		<strong>{{ $provider['name'] }} </strong>
                	@endif	
-				requires a "{{ $form['loginForm']['row'][0]['label'] }}" to complete the account linking process. Please enter it below. </h4>
+				: Please answer the following question(s)</h4>
             </div>
             <div class="panel panel-default">
             	<div class="panel-heading">
@@ -37,15 +40,19 @@ $providerAccountUpdateFormJSON = htmlspecialchars(json_encode($providerAccountUp
                 
                 	{!! Form::hidden('providerAccountUpdateForm', $providerAccountUpdateFormJSON) !!}
 					{!! Form::hidden('mfaType', "questionAndAnswer") !!}
-					{!! Form::hidden('providerId', $provider['id']) !!}
-                	{!! Form::hidden('providerAccountId', $form['providerAccountId']) !!}
-                	               	
-                	<div class="form-group">
-                		{!! Form::Label('token', $form['loginForm']['row'][0]['label']) !!}
-                	</div>
-                	<div class="form-group">
-						{!! Form::text('token', null, ['class' => 'form-control']) !!}	
-					</div>
+					{!! Form::hidden('questions', $number_of_questions) !!}
+					
+                	@foreach($questions as $i => $question)
+	                	{!! Form::hidden('q_'.$i.'_label', $question['label']) !!}
+	                	{!! Form::hidden('q_'.$i.'_id', $question['field'][0]['id']) !!}
+	                	<div class="form-group">
+	                		{!! Form::Label('q_'.$i.'_label', $question['label']) !!}
+	                	</div>
+	                	<div class="form-group">
+							{!! Form::text( 'q_'.$i.'_value', null, ['class' => 'form-control']) !!}	
+						</div>
+					@endforeach
+					
 					<div class="form-group">
 						{!! Form::submit('Submit', ['class' => 'btn btn-warning form-control']) !!}	
 					</div>

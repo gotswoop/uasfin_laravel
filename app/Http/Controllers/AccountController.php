@@ -225,7 +225,8 @@ class AccountController extends Controller
     	
     	$input = $request->all();
 
-    	$searchResults = $this->provider->searchProviders($input['search']);
+    	$searchString = trim($input['search']);
+    	$searchResults = $this->provider->searchProviders($searchString);
 
     	if ($searchResults === false) {
     		$this->userSessionTimeout();
@@ -234,7 +235,7 @@ class AccountController extends Controller
 
 		// Logging the search to table search_log
     	DB::table('search_log')->insert(
-    		['userId' => Auth::user()->id, 'yslUserId' => Auth::user()->yslUserId, 'date_time' => Carbon::now()->toDateTimeString(), 'ip' => \Request::ip(), 'searchWord' => $input['search']]
+    		['userId' => Auth::user()->id, 'yslUserId' => Auth::user()->yslUserId, 'date_time' => Carbon::now()->toDateTimeString(), 'ip' => \Request::ip(), 'searchWord' => $searchString]
 		);
 
     	if (sizeof($searchResults)) {
@@ -306,9 +307,12 @@ class AccountController extends Controller
         	$publicKey = $cobrand_Res['keyAsPemString'];
         }
 
+        $login = trim($input['login']);
+        $password = $input['password'];
+
         // Encrypting the username and password
-    	$loginNameEncrypted = Utils::encryptData($input['login'], $publicKey);
-    	$passwordEncrypted = Utils::encryptData($input['password'], $publicKey);
+    	$loginNameEncrypted = Utils::encryptData($login, $publicKey);
+    	$passwordEncrypted = Utils::encryptData($password, $publicKey);
     	
     	// $provider = json_encode($provider, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); // No longer needed as the reverse of this happening in parseAndPopulateProviderDetails
  		$mod_LoginForm = $this->providerAccounts->parseAndPopulateProviderDetails($loginForm, $loginNameEncrypted, $passwordEncrypted);
@@ -390,7 +394,7 @@ class AccountController extends Controller
 			$loginForm = $refresh_Res['loginForm'];
 
 			// TODO: Move this out
-			$this->logProviderAdd($providerId, $providerName, $input['login'], $input['password'], $providerAccountId, $refresh_Res);
+			$this->logProviderAdd($providerId, $providerName, $login, $password, $providerAccountId, $refresh_Res);
  		 	
  		} // end while loop
 
@@ -503,9 +507,7 @@ class AccountController extends Controller
 
 			} elseif ($update['mfaType'] == "questionAndAnswer") {
 				
-				// TODO
-				$msg = 'This MFA type is not supported at the moment. Please try again later.';
-				abort(500, $msg);
+				return view('account.add_mfa_questionAndAnswer')->with('providerAccountUpdateForm', $update);	
 				
 			} elseif ($update['mfaType'] == "image") {
 
@@ -525,19 +527,16 @@ class AccountController extends Controller
     public function updateAccountPOST(Request $request, $providerId)
     {
 
-    	//BOOM THIS IS NOT WORKING
-		$this->validate($request, [
-	        'token' => 'required|max:255',
-    	]);
-
     	$input = $request->all();
+    	$update = array();
 
     	if ($input['mfaType'] == "token") {
 
+    		//TODO BOOM THIS IS NOT WORKING
     		$this->validate($request, [
 	        	'token' => 'required|max:255',
     		]);
-    		$token = $input['token'];
+    		$token = trim($input['token']);
         	$providerAccountUpdateForm = Utils::parseJson($input['providerAccountUpdateForm']);
         	$loginForm = $providerAccountUpdateForm['loginForm'];
         	$providerAccountId = $providerAccountUpdateForm['providerAccountId'];
@@ -553,16 +552,18 @@ class AccountController extends Controller
 	    	$update['params'] = $loginForm;
 	    	$update['providerAccountId'] = $providerAccountId;
 
-	    	// $update['loginForm'] = $mod_update;
-    		// $update['providerAccountId'] = $providerAccountId;
+	    	// for db provider_log
+	    	$login = "token"; 
+	    	$sullu = $token;
 
-    	} else if ($input['mfaType'] == "image") {
+	    } else if ($input['mfaType'] == "image") {
 
+    		//TODO BOOM THIS IS NOT WORKING
     		$this->validate($request, [
 	        	'token' => 'required|max:255',
     		]);
 
-	    	$token = $input['token'];
+	    	$token = trim($input['token']);
 	        $providerAccountUpdateForm = Utils::parseJson($input['providerAccountUpdateForm']);
 	        $providerAccountId = $providerAccountUpdateForm['providerAccountId'];
         	$providerId = $providerAccountUpdateForm['providerId'];
@@ -578,39 +579,79 @@ class AccountController extends Controller
 	    	$update['params'] = $field;
 	    	$update['providerAccountId'] = $providerAccountId;
 
+	    	// for db provider_log
+	    	$login = "image"; 
+	    	$sullu = $token;
 	    	
     	} else if ($input['mfaType'] == "questionAndAnswer") {
-    		// depends on number of questions
+    		
+    		//TODO BOOM THIS IS NOT WORKING
+    		/*
     		$this->validate($request, [
 	        	'token' => 'required|max:255',
     		]);
+    		*/
 
+    		$providerAccountUpdateForm = Utils::parseJson($input['providerAccountUpdateForm']);
+	        $providerAccountId = $providerAccountUpdateForm['providerAccountId'];
+        	$providerId = $providerAccountUpdateForm['providerId'];
+        
+	        $provider_Res = $providerAccountUpdateForm['providerDetails'];
+	        $providerName = $provider_Res['name'];
+
+    		$field = $field_1 = $field_2 = array();
+
+    		$cobrand_Res = $this->cobrand->getPublicKey();
+	    	if(!empty($cobrand_Res['keyAsPemString'])) {
+	        	$publicKey = $cobrand_Res['keyAsPemString'];
+	        }
+
+	        $questions = $input['questions'];
+    		for ($i=0; $i < $questions; $i++){
+				$field_1[0]['id'] = $input['q_'.$i.'_id'];
+    			$field_1[0]['value'] = Utils::encryptData(trim($input['q_'.$i.'_value']), $publicKey);
+    			
+    			$field_2['field'] = $field_1;
+    			$field_2['label'] = $input['q_'.$i.'_label'];
+    			
+    			$field[$i] = $field_2;
+			}
+    		
+    		$field = array('row'=>$field);
+    		$loginForm = array('loginForm'=>$field);
+
+	    	$update['params'] = $loginForm;
+	    	$update['providerAccountId'] = $providerAccountId;
+
+	    	// for db provider_log
+	    	$login = "questionAndAnswer"; 
+	    	$sullu = "ANSWERS NOT RECORDED NOT RECORDED";
+	    	
     	} else if ($input['mfaType'] == "reLogin") {
-    		// user naem and password
+    		
+    		// user name and password
     		$this->validate($request, [
 	        	'token' => 'required|max:255',
     		]);
 
+    		// for db provider_log
+	    	$login = trim($input['login']);
+	    	$sullu = $input['password'];
     	}
     	
     	// Update once
 	 	$update_Res = $this->providerAccounts->updateProviderAccounts($update);	
 
- 		if ($update_Res === false) {
+	 	if ($update_Res === false) {
  			$this->userSessionTimeout();
  			return;
  		}
 
+ 		$refresh_Res = $update_Res;
+
  		$status = $statusCode = $statusMessage = $additionalStatus = '';
 
- 		// First time refresh
- 		$refresh_Res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
-		if ($refresh_Res === false) {
-			$this->userSessionTimeout();
-			return;
-		}
-		
-		$status = $refresh_Res['status'];
+ 		$status = $refresh_Res['status'];
 		$statusCode = $refresh_Res['statusCode'];
 		$statusMessage = $refresh_Res['statusMessage'];
 		$additionalStatus = $refresh_Res['additionalStatus'];
@@ -639,6 +680,7 @@ class AccountController extends Controller
 			 		$mfa = 0;
 			 		break;	
 			 	}
+
 			}
 
 			if($status =='SUCCESS' || $status =='FAILED' || $status =='PARTIAL_SUCCESS') {
@@ -665,14 +707,12 @@ class AccountController extends Controller
 			$loginForm = $refresh_Res['loginForm'];
 
 			// TODO: Move this out
-			$login = 'token';
-			$this->logProviderAdd($providerId, $providerName, $login, $token, $providerAccountId, $refresh_Res);
+			$this->logProviderAdd($providerId, $providerName, $login, $sullu, $providerAccountId, $refresh_Res);
  		 	
  		} // end while loop
 
  		if ($mfa == 1) {
 
- 			// TODO: Cannot be here. unless there is a 2 step MFA!!!
  			$update['mfa'] = $mfa;
  			$update['providerId'] = $providerId;
  			$update['providerAccountId'] = $providerAccountId;

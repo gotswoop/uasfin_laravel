@@ -2,7 +2,12 @@
 
 @section('content')
 
-{{-- */ $form = $providerDetails;  /*--}}
+{{-- */
+$form = $providerAccountUpdateForm;  
+$provider = $form['providerDetails'];
+$providerAccountUpdateFormJSON = htmlspecialchars(json_encode($providerAccountUpdateForm));
+/*--}}
+
 <?php //dd($form); ?>
 <div class="container">
     <div class="row">
@@ -29,7 +34,10 @@
                 </div>
                 <div class="panel-body">
                 	{!! Form::open() !!}
+					
+						{!! Form::hidden('providerAccountUpdateForm', $providerAccountUpdateFormJSON) !!}
 						{!! Form::hidden('mfaType', "reLogin") !!}
+                	
                 	<div class="form-group">
                 		{!! Form::Label('login', $form['loginForm']['row'][0]['label']) !!}
                 	</div>

@@ -13,13 +13,14 @@ $providerAccountUpdateFormJSON = htmlspecialchars(json_encode($providerAccountUp
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
         	<div class="alert alert-info">
-               	<h4><strong>Multi-Factor Authentication</strong><br/><br/>
+               	<h4><strong>Step4: Multi-factor Authentication (MFA)</strong><br/><br/>
+               	Message from 
   				@if ( isset($provider['baseUrl']) )
                		<a href="{{ $provider['baseUrl'] }}" target="_blank"><strong>{{ $provider['name'] }}</strong> </a>
                	@else
                		<strong>{{ $provider['name'] }} </strong>
                	@endif	
-				requires a "{{ $form['loginForm']['row'][0]['label'] }}" to complete the account linking process. Please enter it below. </h4>
+				: {{ $form['loginForm']['row'][0]['label'] }}</h4>
             </div>
             <div class="panel panel-default">
             	<div class="panel-heading">
@@ -37,9 +38,7 @@ $providerAccountUpdateFormJSON = htmlspecialchars(json_encode($providerAccountUp
                 
                 	{!! Form::hidden('providerAccountUpdateForm', $providerAccountUpdateFormJSON) !!}
                 	{!! Form::hidden('mfaType', "token") !!}
-                	{!! Form::hidden('providerId', $provider['id']) !!}
-                	{!! Form::hidden('providerAccountId', $form['providerAccountId']) !!}
-                	               	
+                	                	               	
                 	<div class="form-group">
                 		{!! Form::Label('token', $form['loginForm']['row'][0]['label']) !!}
                 	</div>
@@ -50,7 +49,7 @@ $providerAccountUpdateFormJSON = htmlspecialchars(json_encode($providerAccountUp
 						{!! Form::submit('Submit', ['class' => 'btn btn-warning form-control']) !!}	
 					</div>
 	                
-	               {!! Form::close() !!}
+	            {!! Form::close() !!}
 
 	                @if ($errors->any())
 	                	<div class="alert alert-danger">

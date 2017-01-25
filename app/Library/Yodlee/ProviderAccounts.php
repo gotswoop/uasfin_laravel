@@ -100,10 +100,44 @@ class ProviderAccounts {
 			$params = $params['params'];
 			
 			$responseObj = Utils::httpPut($requestUrl, $params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
-			
+
 			if ( $responseObj['httpStatus'] == '200' ) {
 
-				return $responseObj['body'];
+				$res = $responseObj['body']['providerAccount'];
+				
+				$refresh = array();
+				
+				$refresh['statusCode'] = $res['refreshInfo']['statusCode'];
+				$refresh['status'] = $res['refreshInfo']['status'];
+				$refresh['statusMessage'] = $res['refreshInfo']['statusMessage'];
+				
+				$refresh['additionalStatus'] = '';
+				if (array_key_exists('additionalStatus', $res['refreshInfo'])) {
+					$refresh['additionalStatus'] = $res['refreshInfo']['additionalStatus'];	
+				}
+				
+				$refresh['actionRequired'] = '';
+				if (array_key_exists('actionRequired', $res['refreshInfo'])) {
+					$refresh['actionRequired'] = $res['refreshInfo']['actionRequired'];
+				}
+
+				$refresh['message'] = '';
+				if (array_key_exists('message', $res['refreshInfo'])) {
+					$refresh['message'] = $res['refreshInfo']['message'];
+				}
+				
+				// Is this ever returned for this call?
+				$refresh['additionalInfo'] = '';
+				if (array_key_exists('additionalInfo', $res['refreshInfo'])) {
+					$refresh['additionalInfo'] = $res['refreshInfo']['additionalInfo'];	
+				}
+
+				$refresh['loginForm'] = '';
+				if (array_key_exists('loginForm', $res)) {
+					$refresh['loginForm'] = $res['loginForm'];
+				}
+							
+				return $refresh;   	
 
 			} else {
 
@@ -185,7 +219,6 @@ class ProviderAccounts {
 			$request = config('services.yodlee.providerAccounts.url'). '/'.$providerAccountId;
 			
 			$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
-
 			
 			if ( $responseObj['httpStatus'] == '200' ) {
 
