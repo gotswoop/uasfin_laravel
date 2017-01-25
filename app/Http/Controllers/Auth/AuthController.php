@@ -38,6 +38,7 @@ class AuthController extends Controller
      * @var string
      */
     protected $redirectTo = 'login';
+    protected $redirectAfterLogout = '/'; // on user "Clicking Logout, not auto-logout"
 
     /**
      * Create a new authentication controller instance.
@@ -47,14 +48,12 @@ class AuthController extends Controller
     public function __construct(Cobrand $cobrand, YodleeUser $yodleeUser)
     {
         $this->middleware('guest', ['except' => 'logout']);
-
+        
         $this->yodleeUser = $yodleeUser;
 
         // login the Cobrand here
 		$cobSession = $cobrand->login();
 		
-		// \Config::set('services.yodlee.cobrand.sessionToken', $cobrand['session']['cobSession']);
-		// $this->cobrandSessionToken = $cobrand['session']['cobSession'];
 		\Config::set('services.yodlee.cobrand.sessionToken', $cobSession);
 		$this->cobrandSessionToken = $cobSession;
     }

@@ -55,8 +55,7 @@ class AccountController extends Controller
 		$accounts = $this->account->getAllAccounts();
 
 		if ($accounts === false) {
-			$this->userSessionTimeout();
-			return;
+			return $this->userSessionTimeout();
 		}
 		
 		if (array_key_exists('account', $accounts)) { // populating data for dashboard if user has accounts.
@@ -119,8 +118,7 @@ class AccountController extends Controller
 			$res = $this->providerAccounts->deleteProviderAccounts($providerId); 
 
 			if ($res === false) {
-				$this->userSessionTimeout();
-				return;
+				return $this->userSessionTimeout();
 			}
 
 			if ($res) {
@@ -146,8 +144,7 @@ class AccountController extends Controller
 		$accounts = $this->providerAccounts->getProviderAccounts();
 
 		if ($accounts === false) {
-			$this->userSessionTimeout();
-			return;
+			return $this->userSessionTimeout();
 		}
 
 		if (isset($accounts['providerAccount'])) {	// Display secret status page
@@ -176,8 +173,7 @@ class AccountController extends Controller
      	$accountDetails = $this->account->getTransactions($id);
      	
      	if ($accountSummary === false || $accountDetails === false) {
-     		$this->userSessionTimeout();
-     		return;
+     		return $this->userSessionTimeout();
      	}
 		
 		if (isset($accountDetails['transaction'])) {
@@ -229,8 +225,7 @@ class AccountController extends Controller
     	$searchResults = $this->provider->searchProviders($searchString);
 
     	if ($searchResults === false) {
-    		$this->userSessionTimeout();
-    		return;
+    		return $this->userSessionTimeout();
     	}
 
 		// Logging the search to table search_log
@@ -265,8 +260,7 @@ class AccountController extends Controller
   		}
 
   		if ($providerObj === false) {
-  			$this->userSessionTimeout();
-  			return;
+  			return $this->userSessionTimeout();
   		}
   		    	
     	$providerObj = reset($providerObj);
@@ -292,9 +286,8 @@ class AccountController extends Controller
   		}
 
   		if ($provider_Res === false){
-			$this->userSessionTimeout();
-			return;
-  		}
+			return $this->userSessionTimeout();
+		}
 
   		$provider_Res = reset($provider_Res);
   		$provider_Res = reset($provider_Res);
@@ -325,8 +318,7 @@ class AccountController extends Controller
  		$add_Res = $this->providerAccounts->addProviderAccounts($mod_provider);
 
  		if ($add_Res === false) {
- 			$this->userSessionTimeout();
- 			return;
+ 			return $this->userSessionTimeout();
  		}
 
  		$providerAccountId = $add_Res['providerAccount']['id'];
@@ -336,8 +328,7 @@ class AccountController extends Controller
  		// First time refresh
  		$refresh_Res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
 		if ($refresh_Res === false) {
-			$this->userSessionTimeout();
-			return;
+			return $this->userSessionTimeout();
 		}
 		
 		$status = $refresh_Res['status'];
@@ -382,8 +373,7 @@ class AccountController extends Controller
 			// Repeated refreshes
 			$refresh_Res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
 			if ($refresh_Res === false) {
-				$this->userSessionTimeout();
-				return;
+				return $this->userSessionTimeout();
 			}
 			
 			$status = $refresh_Res['status'];
@@ -643,8 +633,7 @@ class AccountController extends Controller
 	 	$update_Res = $this->providerAccounts->updateProviderAccounts($update);	
 
 	 	if ($update_Res === false) {
- 			$this->userSessionTimeout();
- 			return;
+ 			return $this->userSessionTimeout();
  		}
 
  		$refresh_Res = $update_Res;
@@ -695,8 +684,7 @@ class AccountController extends Controller
 			// Repeated refreshes
 			$refresh_Res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
 			if ($refresh_Res === false) {
-				$this->userSessionTimeout();
-				return;
+				return $this->userSessionTimeout();
 			}
 			
 			$status = $refresh_Res['status'];
