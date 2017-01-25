@@ -11,11 +11,7 @@ class PagesController extends Controller
 {
 	public function home (Request $request)
 	{
-		// echo config('services.yodlee.base_url');
-		// echo Config::get('services.yodlee.base_url');
-		// dd($request);
-		// echo $request->name;
-
+	
 		// If a user is logged in, redirect to dashboard instead of home page
 		if ( $request->user() ) {
 

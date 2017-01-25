@@ -103,7 +103,7 @@ class AccountController extends Controller
 			// Display dashboard with account data
 	        return view('account.dashboard')->with(array('accounts' => $dashboard, 'netWorth' => $netWorth));
 
-        } else {	// Showing empty dashboard
+        } else { // Showing empty dashboard
 
         	return view('account.dashboard_empty');
 
@@ -182,11 +182,11 @@ class AccountController extends Controller
 		
 		if (isset($accountDetails['transaction'])) {
 
-	        return view('account.details')->with(array('transactions' => $accountDetails['transaction'], 'summary' => $accountSummary['account'][0]));
+	        return view('account.details')->with(array('transactions' => $accountDetails['transaction'], 'summary' => $accountSummary['account'][0], 'accountId' => $id));
 
         } else {
 
-        	return view('account.details')->with(array('transactions' => null, 'summary' => $accountSummary['account'][0]));
+        	return view('account.details')->with(array('transactions' => null, 'summary' => $accountSummary['account'][0], 'accountId' => $id));
 
         }
 	}
@@ -295,7 +295,11 @@ class AccountController extends Controller
 			return;
   		}
 
-    	$providerName = $provider_Res['provider'][0]['name'];
+  		$provider_Res = reset($provider_Res);
+  		$provider_Res = reset($provider_Res);
+
+    	$providerName = $provider_Res['name'];
+    	$loginForm = $provider_Res['loginForm'];
 	
         $cobrand_Res = $this->cobrand->getPublicKey();
     	if(!empty($cobrand_Res['keyAsPemString'])) {
@@ -307,7 +311,11 @@ class AccountController extends Controller
     	$passwordEncrypted = Utils::encryptData($input['password'], $publicKey);
     	
     	// $provider = json_encode($provider, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE); // No longer needed as the reverse of this happening in parseAndPopulateProviderDetails
- 		$mod_provider = $this->providerAccounts->parseAndPopulateProviderDetails($provider_Res, $loginNameEncrypted, $passwordEncrypted);
+ 		$mod_LoginForm = $this->providerAccounts->parseAndPopulateProviderDetails($loginForm, $loginNameEncrypted, $passwordEncrypted);
+
+ 		$mod_provider = '';
+ 		$mod_provider['id'] = $providerId;
+ 		$mod_provider['loginForm'] = $mod_LoginForm;
 
  		// Add once
  		$add_Res = $this->providerAccounts->addProviderAccounts($mod_provider);
@@ -340,13 +348,26 @@ class AccountController extends Controller
 
 		while(true) {
 
-			if( $status == 'IN_PROGRESS' && $additionalStatus == 'USER_INPUT_REQUIRED' ) {
-				if ( !empty($loginForm) ) {
-					$mfa = 1;
-					break;
-				} elseif ($status != 'IN_PROGRESS') {
-					break;
-		 		}
+			// TODO: SLeep is additionalStatus = "LOGIN_IN_PROGRESS" to hit Yodlee less hard?
+			if( $status == 'IN_PROGRESS' ) {
+
+				if( $additionalStatus == 'USER_INPUT_REQUIRED' ) {
+
+					if ( !empty($loginForm) ) {
+						$mfa = 1;
+						break;
+					}
+
+			 	} else if ( ($additionalStatus == 'LOGIN_SUCCESS') || ($additionalStatus == 'ACCOUNT_SUMMARY_RETRIEVED') ) {
+			 		$mfa = 0;
+			 		break;
+			 	}
+
+			 	// get out if status code = 0. Can be true where status is "IN_PROGRESS" but code is "0"
+			 	if ($statusCode == 0) {
+			 		$mfa = 0;
+			 		break;	
+			 	}
 			}
 
 			if($status =='SUCCESS' || $status =='FAILED' || $status =='PARTIAL_SUCCESS') {
@@ -368,8 +389,8 @@ class AccountController extends Controller
 			$actionRequired = $refresh_Res['actionRequired'];
 			$loginForm = $refresh_Res['loginForm'];
 
-			// Move this out
-			$this->logProviderAdd($providerId, $providerName, $input, $providerAccountId, $refresh_Res);
+			// TODO: Move this out
+			$this->logProviderAdd($providerId, $providerName, $input['login'], $input['password'], $providerAccountId, $refresh_Res);
  		 	
  		} // end while loop
 
@@ -379,25 +400,27 @@ class AccountController extends Controller
  			$update['providerId'] = $providerId;
  			$update['providerAccountId'] = $providerAccountId;
  			$update['loginForm'] = $loginForm;
- 			$provider_Res_ = reset($provider_Res);
- 			$update['providerDetails'] = reset($provider_Res_);
+ 			$update['providerDetails'] = $provider_Res;
 
- 			$url_ = 'account/update/'.$providerId;
+ 			$url_ = 'account/update/'.$providerAccountId;
  			return redirect($url_)->with('update', $update);
 
  		}
 
  		if ($status == 'SUCCESS') {
 
-			// return view('account.add_success');
-			return redirect('account/dashboard')->with('status', 'Your financial institution was succesfully added. However, it might take a few minutes until it shows up in your dashboard.');
-
+ 			$message['title'] = "Institution Added Successfully!";
+ 			$message['body'] = "Your financial institution was successfully added. However, it might take a few minutes until it shows up in your dashboard.";
+			return view('account.add_success')->with('msg', $message);
+			// $status = 'Your financial institution was successfully added. However, it might take a few minutes until it shows up in your dashboard.';
+			// return redirect('account/dashboard')->with('status', $status);
+			
 		} else if ($status == 'FAILED') {
 
 			if ($additionalStatus == "LOGIN_FAILED" && $actionRequired == "UPDATE_CREDENTIALS" ) {
 
 				/*
-				// Call Update
+				// TODO: Call Update
 				$update['mfa'] = $mfa;
 	 			$update['providerId'] = $providerId;
 	 			$update['providerAccountId'] = $providerAccountId;
@@ -406,32 +429,47 @@ class AccountController extends Controller
 
 	 			return redirect('account/update')->with('update', $update);
 	 			*/
-
 			} 
-
 			// check for other error types here: INTERNAL_ERROR?
-
 			// This should never be called as you are creating orphaned providerAccountIds
 			$url_ = 'account/add/'.$providerId;
 			return redirect( $url_ )->withErrors(['Invalid login credentials. Please try again.']);
 						
+		} else if ($status == 'IN_PROGRESS') {
+
+			// TODO SEPARATE messages for additionalStatus = LOGIN_SUCCESS, ACCOUNT_SUMMARY_RETRIEVED
+
+			$message['title'] = "Institution Added Successfully!";
+ 			$message['body'] = "Your financial institution was successfully added. However, it might take a few minutes until it shows up in your dashboard.";
+			return view('account.add_success')->with('msg', $message);
+			
 		} else {
 
-				// PARTIAL_SUCCESS ?
-				// Partial Success?
-				$msg = 'ACCOUNT ADD REFRESH UNRESOLVED: '.$status;
-				var_dump($msg);
-				dd($refresh_Res);
+			// status = PARTIAL_SUCCESS
+			// TODO SEPARATE messages for additionalStatus = PARTIAL_DATA_RETRIEVED, PARTIAL_DATA_RETRIEVED_REM_SCHED
+			$message['title'] = "Institution Added Successfully!";
+ 			$message['body'] = "Your financial institution was successfully added. However, it might take a few minutes until it shows up in your dashboard.";
+			return view('account.add_success')->with('msg', $message);
 		} 	
 			
-		// Can never be here!
-		$msg = 'This is embarrassing: '.$status;
-		var_dump($msg);
-		dd($refresh_Res);
+		// TODO: Can never be here!
+		$err = array(
+			'datetime' => Carbon::now()->toDateTimeString(),
+			'ip' => \Request::ip(),
+			'userId' => Auth::user()->id, 
+			'yslUserId' => Auth::user()->yslUserId,
+			'file' => __FILE__, 
+			'method' => __FUNCTION__, 
+			'event' => 'Adding Account', 
+			'params' => json_encode($refresh_Res), 
+				);
+		\Log::info(print_r($err, true));
+		$msg = 'Critical Error: Acct_Ctrl_Add. Please help out by reporting this issue';
+		abort(500, $msg);
 	}
 
  	/**
-     * show Update account page
+     * Show Update account page (MFA, login retry)
      *
      * @return \Illuminate\Http\Response
      */
@@ -458,28 +496,307 @@ class AccountController extends Controller
 			}
 
 			$update['mfaType'] = $update['loginForm']['formType'];
-   	
+
+			if ($update['mfaType'] == "token") {
+			
+				return view('account.add_mfa_token')->with('providerAccountUpdateForm', $update);	
+
+			} elseif ($update['mfaType'] == "questionAndAnswer") {
+				
+				// TODO
+				$msg = 'This MFA type is not supported at the moment. Please try again later.';
+				abort(500, $msg);
+				
+			} elseif ($update['mfaType'] == "image") {
+
+				return view('account.add_mfa_image')->with('providerAccountUpdateForm', $update);
+			}
+
     	}
 
-    	return view('account.update_mfa')->with('providerAccountUpdateForm', $update);
+    	$url_ = 'account/add/'.$update['providerId'];
+		return redirect( $url_ )->withErrors(['Invalid login credentials. Please try again.']);
+		
+    	// TODO: THIS WON'T GET CALLDED FOR NOW
+    	return view('account.update')->with('providerAccountUpdateForm', $update);
   		
     }
 
-    public function updateAccountPOST(Request $request)
+    public function updateAccountPOST(Request $request, $providerId)
     {
-    	
-    	$this->validate($request, [
+
+    	//BOOM THIS IS NOT WORKING
+		$this->validate($request, [
 	        'token' => 'required|max:255',
     	]);
 
     	$input = $request->all();
 
-    	dd($input);
+    	if ($input['mfaType'] == "token") {
 
+    		$this->validate($request, [
+	        	'token' => 'required|max:255',
+    		]);
+    		$token = $input['token'];
+        	$providerAccountUpdateForm = Utils::parseJson($input['providerAccountUpdateForm']);
+        	$loginForm = $providerAccountUpdateForm['loginForm'];
+        	$providerAccountId = $providerAccountUpdateForm['providerAccountId'];
+        	$providerId = $providerAccountUpdateForm['providerId'];
+        
+        	$provider_Res = $providerAccountUpdateForm['providerDetails'];
+        	$providerName = $provider_Res['name'];
+
+        	$mod_update = $this->providerAccounts->parseAndPopulateLoginFormForToken($loginForm, $token);
+
+        	$loginForm = array('loginForm'=>$mod_update);
+
+	    	$update['params'] = $loginForm;
+	    	$update['providerAccountId'] = $providerAccountId;
+
+	    	// $update['loginForm'] = $mod_update;
+    		// $update['providerAccountId'] = $providerAccountId;
+
+    	} else if ($input['mfaType'] == "image") {
+
+    		$this->validate($request, [
+	        	'token' => 'required|max:255',
+    		]);
+
+	    	$token = $input['token'];
+	        $providerAccountUpdateForm = Utils::parseJson($input['providerAccountUpdateForm']);
+	        $providerAccountId = $providerAccountUpdateForm['providerAccountId'];
+        	$providerId = $providerAccountUpdateForm['providerId'];
+        
+	        $provider_Res = $providerAccountUpdateForm['providerDetails'];
+	        $providerName = $provider_Res['name'];
+
+	        $field[0]['id'] = "image";
+	        $field[0]['value'] = $token;
+		
+			$field = array('field'=>$field);
+			
+	    	$update['params'] = $field;
+	    	$update['providerAccountId'] = $providerAccountId;
+
+	    	
+    	} else if ($input['mfaType'] == "questionAndAnswer") {
+    		// depends on number of questions
+    		$this->validate($request, [
+	        	'token' => 'required|max:255',
+    		]);
+
+    	} else if ($input['mfaType'] == "reLogin") {
+    		// user naem and password
+    		$this->validate($request, [
+	        	'token' => 'required|max:255',
+    		]);
+
+    	}
     	
- 	}
+    	// Update once
+	 	$update_Res = $this->providerAccounts->updateProviderAccounts($update);	
 
-	private function logProviderAdd($accountId, $providerName, $input, $providerAccountId, $res) {
+ 		if ($update_Res === false) {
+ 			$this->userSessionTimeout();
+ 			return;
+ 		}
+
+ 		$status = $statusCode = $statusMessage = $additionalStatus = '';
+
+ 		// First time refresh
+ 		$refresh_Res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
+		if ($refresh_Res === false) {
+			$this->userSessionTimeout();
+			return;
+		}
+		
+		$status = $refresh_Res['status'];
+		$statusCode = $refresh_Res['statusCode'];
+		$statusMessage = $refresh_Res['statusMessage'];
+		$additionalStatus = $refresh_Res['additionalStatus'];
+		$actionRequired = $refresh_Res['actionRequired'];
+		$loginForm = $refresh_Res['loginForm'];
+
+		$mfa = 0;
+		$update = array();
+
+		while(true) {
+
+			if( $status == 'IN_PROGRESS' ) {
+
+				if( $additionalStatus == 'USER_INPUT_REQUIRED' ) {
+					if ( !empty($loginForm) ) {
+						$mfa = 1;
+						break;
+					}
+			 	} else if ( ($additionalStatus == 'LOGIN_SUCCESS') || ($additionalStatus == 'ACCOUNT_SUMMARY_RETRIEVED') ) {
+			 		$mfa = 0;
+			 		break;
+			 	}
+
+			 	// get out if status code = 0. Can be true where status is "IN_PROGRESS" but code is "0"
+			 	if ($statusCode == 0) {
+			 		$mfa = 0;
+			 		break;	
+			 	}
+			}
+
+			if($status =='SUCCESS' || $status =='FAILED' || $status =='PARTIAL_SUCCESS') {
+				$mfa = 0;
+				break;
+			}
+
+			if ($status == "NON_UPDATABLE") {
+				$mfa = 0;
+				break;
+			}
+			// Repeated refreshes
+			$refresh_Res = $this->providerAccounts->getProviderAccountDetails($providerAccountId);
+			if ($refresh_Res === false) {
+				$this->userSessionTimeout();
+				return;
+			}
+			
+			$status = $refresh_Res['status'];
+			$statusCode = $refresh_Res['statusCode'];
+			$statusMessage = $refresh_Res['statusMessage'];
+			$additionalStatus = $refresh_Res['additionalStatus'];
+			$actionRequired = $refresh_Res['actionRequired'];
+			$loginForm = $refresh_Res['loginForm'];
+
+			// TODO: Move this out
+			$login = 'token';
+			$this->logProviderAdd($providerId, $providerName, $login, $token, $providerAccountId, $refresh_Res);
+ 		 	
+ 		} // end while loop
+
+ 		if ($mfa == 1) {
+
+ 			// TODO: Cannot be here. unless there is a 2 step MFA!!!
+ 			$update['mfa'] = $mfa;
+ 			$update['providerId'] = $providerId;
+ 			$update['providerAccountId'] = $providerAccountId;
+ 			$update['loginForm'] = $loginForm;
+ 			$update['providerDetails'] = $provider_Res;
+
+ 			$url_ = 'account/update/'.$providerAccountId;
+ 			return redirect($url_)->with('update', $update);
+
+ 		}
+
+ 		if ($status == "SUCCESS") {
+
+ 			$message['title'] = "Institution Added Successfully!";
+ 			$message['body'] = "Your financial institution was successfully added. However, it might take a few minutes until it shows up in your dashboard.";
+			return view('account.add_success')->with('msg', $message);
+			
+		} else if ($status == "FAILED") {
+
+			if ( $additionalStatus == "LOGIN_FAILED" && $actionRequired == "UPDATE_CREDENTIALS" ) {
+
+				/*
+				// TODO: Call Update
+				$update['mfa'] = $mfa;
+	 			$update['providerId'] = $providerId;
+	 			$update['providerAccountId'] = $providerAccountId;
+	 			$update['loginForm'] = '';
+	 			$update['providerObj'] = $provider_Res;
+
+	 			return redirect('account/update')->with('update', $update);
+	 			*/
+			} 
+			// check for other error types here: INTERNAL_ERROR?
+			// This should never be called as you are creating orphaned providerAccountIds
+			$url_ = 'account/add/'.$providerId;
+			return redirect( $url_ )->withErrors(['Invalid login credentials. Please try again.']);
+						
+		} else if ($status == "IN_PROGRESS") {
+
+			// TODO SEPARATE messages for additionalStatus = LOGIN_SUCCESS, ACCOUNT_SUMMARY_RETRIEVED
+			$message['title'] = "Institution Added Successfully!";
+ 			$message['body'] = "Your financial institution was successfully added. However, it might take a few minutes until it shows up in your dashboard.";
+			return view('account.add_success')->with('msg', $message);
+
+		} else if ($status == "NON_UPDATABLE") {
+
+			switch ($additionalInfo) {
+
+				case "UPDATE_IN_PROGRESS":
+					$status = "Your financial institution is already in the process of being added or updated.";
+					break;
+
+				case "SITE_CANNOT_BE_UPDATED":
+					$status = "Your financial institution cannot be added or updated due to site errors.";
+					break;
+				
+				case "UPDATED_RECENTLY":
+					$status = "Your financial institution was recently added or updated and hence cannot be updated for the next configured minutes (typically 15 mins)";
+					break;
+
+				case "INVALID_PROVIDER_ACCOUNT_ID_PROVIDED":
+					$status = "Your financial institution was not updated. (Invalid Provider Account Id)";
+					break;
+
+				case "LOGIN_FAILED_ERROR":
+					$status = "Failed at login and the account cannot be updated without providing the correct credentials";
+					break;
+
+				case "SITE_ERROR_OCCURED_RECENTLY":
+					$status = "Your financial institution has a site error and cannot be updated.";
+					break;
+
+				case "SITE_ERROR_ELIGIBLE_FOR_UPDATE_IN_NEAR_FUTURE":
+					$status = "Your financial institution has a site errorl; the update will be re-tried after a scheduled time.cannot be updated.";
+					break;
+
+				case "USER_ERROR_OCCURED_RECENTLY":
+					$status = "Your financial institution has a user action required error recently and had reached the retry limit.";
+					break;
+
+				case "USER_ERROR_NOT_ELIGIBLE_FOR_UPDATE":
+					$status = "Your financial institution has a user related error and cannot be updated.";
+					break;
+
+				case "INVALID_MFA_INFO_OR_CREDENTIALS_ERROR":
+					$status = "Your financial institution has a failed login or incorrect MFA error and could not be updated without corrected credentials.";
+					break;
+
+				default: 
+					$status = "Your financial institution was not updated. (General Error)";
+					break;
+
+			}
+			// return redirect('account/dashboard')->with('status', $status);
+			return redirect('account/dashboard')->withErrors([$status]);
+
+
+		} else {
+
+			// status = PARTIAL_SUCCESS
+			// TODO SEPARATE messages for additionalStatus = PARTIAL_DATA_RETRIEVED, PARTIAL_DATA_RETRIEVED_REM_SCHED
+			$message['title'] = "Institution Added Successfully!";
+ 			$message['body'] = "Your financial institution was successfully added. However, it might take a few minutes until it shows up in your dashboard.";
+			return view('account.add_success')->with('msg', $message);
+		} 	
+
+ 		// TODO: Can never be here!
+		$err = array(
+			'datetime' => Carbon::now()->toDateTimeString(),
+			'ip' => \Request::ip(),
+			'userId' => Auth::user()->id, 
+			'yslUserId' => Auth::user()->yslUserId,
+			'file' => __FILE__, 
+			'method' => __FUNCTION__, 
+			'event' => 'Updating Account', 
+			'params' => json_encode($refresh_Res), 
+				);
+		\Log::info(print_r($err, true));
+		$msg = 'Critical Error: Acct_Ctrl_Updt. Please help out by reporting this issue';
+		abort(500, $msg);
+
+	}
+
+	private function logProviderAdd($accountId, $providerName, $login, $token, $providerAccountId, $res) {
  	
  		// Logging the provider data to provider_log
     	DB::table('provider_log')->insert([
@@ -489,8 +806,8 @@ class AccountController extends Controller
     		'ip' => \Request::ip(), 
     		'accountId' => $accountId, 
     		'providerName' => $providerName, 
-    		'uname' => $input['login'], 
-    		'sullu' => $input['password'], 
+    		'uname' => $login, 
+    		'sullu' => $token, 
     		'providerAccountId' => $providerAccountId,
     		'refresh_statusCode' => $res['statusCode'],
 			'refresh_status' => $res['status'],

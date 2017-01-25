@@ -178,7 +178,6 @@ class Account {
 
 				$err = array('file' => __FILE__, 'method' => __FUNCTION__, 'event' => 'Getting net worth for user'); 
 				$error = array_merge($err, $responseObj['error']);
-				// dd($error);
 
 			}
 

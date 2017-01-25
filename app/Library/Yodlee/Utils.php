@@ -60,6 +60,30 @@ class Utils {
         return self::parseResponse($res);
 	}
 
+
+	static function httpPut ( $requestUrl, $params, $cobrandSession, $userSession ) 
+	{
+
+		$client = new GuzzleHttp\Client(['http_errors' => false]);
+	        
+		$auth = null;
+
+		if (!empty($cobrandSession)) {
+		   $auth = '{cobSession='.$cobrandSession.'}';
+		}
+		if (!empty($cobrandSession) && !empty($userSession)) {
+		   $auth = '{cobSession='.$cobrandSession.', userSession='.$userSession.'}';
+		}
+
+		$res = $client->request('PUT', $requestUrl , [
+			'headers' => [ 'Authorization' => $auth, 'Content-type' => 'application/json' ],
+			'json' => $params,
+		]);
+
+		return self::parseResponse($res);
+	}
+
+
 	static function httpDelete ( $requestUrl, $params, $cobrandSession, $userSession ) 
 	{
 

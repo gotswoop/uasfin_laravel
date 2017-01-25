@@ -36,6 +36,9 @@ $providerAccountUpdateFormJSON = htmlspecialchars(json_encode($providerAccountUp
                 {!! Form::open() !!}
                 
                 	{!! Form::hidden('providerAccountUpdateForm', $providerAccountUpdateFormJSON) !!}
+                	{!! Form::hidden('mfaType', "token") !!}
+                	{!! Form::hidden('providerId', $provider['id']) !!}
+                	{!! Form::hidden('providerAccountId', $form['providerAccountId']) !!}
                 	               	
                 	<div class="form-group">
                 		{!! Form::Label('token', $form['loginForm']['row'][0]['label']) !!}
@@ -46,7 +49,9 @@ $providerAccountUpdateFormJSON = htmlspecialchars(json_encode($providerAccountUp
 					<div class="form-group">
 						{!! Form::submit('Submit', ['class' => 'btn btn-warning form-control']) !!}	
 					</div>
-	                {!! Form::close() !!}
+	                
+	               {!! Form::close() !!}
+
 	                @if ($errors->any())
 	                	<div class="alert alert-danger">
 	                		{{ $errors->first() }}
