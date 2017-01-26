@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<?php dd($accounts); ?>
+<?php //dd($accounts); ?>
 <div class="container">
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
@@ -53,9 +53,9 @@
 	                    		<td>{{ \Carbon\Carbon::createFromTimeStamp(strtotime($account['refreshInfo']['lastRefreshed']))->diffForHumans() }} </td>
 	                    		--}}
 								@if ($account['refreshInfo']['status'] == 'SUCCESS')
-									<td> <a href="/account/remove/{{ $account['id'] }}">Remove Institution</a></td>
+									<td> <a href="/account/removeProviderAccount/{{ $account['id'] }}">Remove Institution</a></td>
 								@else
-									<td><a href="/account/remove/{{ $account['id'] }}">Clear</a>&nbsp;&nbsp;&nbsp;<a href="/account/add/{{ $account['providerId'] }}">Try Again<a/></td>
+									<td><a href="/account/removeProviderAccount/{{ $account['id'] }}">Clear</a>&nbsp;&nbsp;&nbsp;<a href="/account/add/{{ $account['providerId'] }}">Try Again<a/></td>
 								@endif
 	                    	@endforeach
 	                   	</table>

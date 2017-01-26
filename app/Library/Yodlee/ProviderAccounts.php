@@ -378,20 +378,19 @@ class ProviderAccounts {
 	}
 
     
-	public function deleteProviderAccounts($providerId) 
+	public function deleteProviderAccounts($providerAccountId) 
 	{
 
 		if ( $this->yodleeUser->isActive() ) { // Checking if user is active
 			
-			$params = array('providerAccountId' => $providerId);
+			$request = config('services.yodlee.providerAccounts.url'). '/'.$providerAccountId;
 
-			$request = config('services.yodlee.providerAccounts.url'). '/'.$providerId;
+			$params = null;
 			
 			$responseObj = Utils::httpDelete($request, $params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 				
 			if ( $responseObj['httpStatus'] == '204' ) {
 
-				// Logout the local user
 				return true;
 
 			} else {
@@ -403,7 +402,7 @@ class ProviderAccounts {
 					'yslUserId' => Auth::user()->yslUserId,
 					'file' => __FILE__, 
 					'method' => __FUNCTION__, 
-					'event' => 'Deleting Provider account', 
+					'event' => 'Deleting ProviderAccount', 
 					'params' => $providerId, 
 				);
 				$error = array_merge($err, $responseObj['error']);

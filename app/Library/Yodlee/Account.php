@@ -162,9 +162,45 @@ class Account {
 		}
     }
 
+    // delete a specific account within a providerAccountId
     public function deleteAccount($accountId) {
 
-    	// delete a specific account within a provider
+    	if ( $this->yodleeUser->isActive() ) { // Checking if user is active
+
+			$request = config('services.yodlee.accounts.url').'/'.$accountId;
+
+			$params = null;
+
+			$responseObj = Utils::httpDelete($request, $params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
+
+			if ( $responseObj['httpStatus'] == '204' ) {
+				
+				return true;
+
+			} else {
+				
+				$err = array(
+					'datetime' => Carbon::now()->toDateTimeString(),
+					'ip' => \Request::ip(),
+					'userId' => Auth::user()->id, 
+					'yslUserId' => Auth::user()->yslUserId,
+					'file' => __FILE__, 
+					'method' => __FUNCTION__, 
+					'event' => 'Getting an Yodlee Account (inside providerAccountId)', 
+					'params' => null, 
+				);
+				$error = array_merge($err, $responseObj['error']);
+				\Log::info(print_r($error, true));
+				$msg = 'Yodlee Error ' . $error['code'].' - "'.$error['message'].'"';
+				abort(500, $msg);
+
+			}
+
+		} else {
+
+			return false;
+							
+		}
 
     }
 

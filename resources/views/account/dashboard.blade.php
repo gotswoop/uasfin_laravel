@@ -32,17 +32,32 @@
                     	<tr>
                     		<th>#</th>
                     		<th>Financial Institution</th>
-                    		<th>Account  Name</th>
-							<th>Type</th>
+                    		<th>Account Type</th>
+                    		<th>Account Type</th>
                     		<th>Balance</th>
                     	</tr>	
-                    	
-                    	@foreach ($accounts as $account)
-                    		<tr>
-                    		<td> {{ $i++ }}. </td>
-                    		<td style="font-weight: bold"><a href="/account/details/{{ $account['id'] }}/?container={{ $account['CONTAINER'] }}"> {{ $account['providerName'] }} </a></td>
-                    		<td> {{ $account['accountName'] }} </td>
-                    		<td> {{ $account['accountType'] }} </td>
+
+							{{--*/ $i = 1; /*--}}
+                   	        @foreach ($accounts as $providerAccountId => $account_)
+
+                   	        <?php 
+	                    		$accounts = $account_['accounts'];
+	                    		$providerName = $account_['providerName'];
+	                    		$status = $account_['status'];
+                    		?>
+
+                    		{{--*/ $j = 'a'; /*--}}
+				       		@foreach ($accounts as $account )
+				       		
+				       		<tr>
+                    		<td> {{ $i }}{{ $j++ }}. </td>
+                    		<td style="font-weight: bold"><a href="/account/details/{{ $account['id'] }}/?container={{ $account['CONTAINER'] }}">{{ $providerName }} </a>
+                    		@if ( $status == 'FAILED')
+                    			&nbsp; <a href="#" class="text-danger">INACTIVE</a>
+                    		@endif
+                    		</td>
+                    		<td> {{ ucwords(strtolower($account['accountName'])) }} </td>
+                    		<td> {{ ucwords(strtolower($account['accountType'])) }} </td>
 							{{--*/ $color = 'black' /*--}}
 							{{--*/ $neg = '' /*--}}
 							@if ($account['balanceAmount'])
@@ -60,6 +75,8 @@
 							{{-- <td>{{ \Carbon\Carbon::createFromTimeStamp(strtotime($account['lastUpdated']))->diffForHumans() }} </td> --}}
 							{{-- <td align="center"><a href="/account/refresh/{{ $account['providerAccountId'] }}"><img src="/images/refresh.png"></a></td> --}}
 
+						@endforeach
+						{{--*/ $i++; /*--}}	
 						@endforeach
                    	</table>
 

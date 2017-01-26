@@ -45,9 +45,9 @@ $providerAccountUpdateFormJSON = htmlspecialchars(json_encode($providerAccountUp
                 	<div class="form-group">
                 	<?php // Displaying image captcha
                 		$imgArray = $form['loginForm']['row'][0]['field'][0]['image'];
-						$str = call_user_func_array("pack", array_merge(array("C*"), $imgArray));
-						$imgData = base64_encode($str);
-						echo "<img src='data:image/jpeg;base64, $imgData' />";
+						$str = call_user_func_array("pack", array_merge(array("C*"), $imgArray)); // Converting image array to string
+						$imgData = base64_encode($str); 
+						echo "<img src='data:image/jpeg;base64, $imgData' />"; // displaying the image
 					?>
                 	</div>
                 	

@@ -67,7 +67,8 @@ class AccountController extends Controller
 			$netWorth['liabilities'] = 0;
 			
 			// Calculating the total assets and liabilities
-		   	foreach ($accounts['account'] as $account) {
+
+			foreach ($accounts['account'] as $account) {
 		   		
 		   		if (array_key_exists('balance', $account)) { // Only look for accounts that have a balance		   		
 		   			if ($account['isAsset']) {
@@ -96,16 +97,48 @@ class AccountController extends Controller
 		   		}
 			}
 
-			$arr = array();
-
-			/*
+			// get providerAccounts (Status of all accounts, added, failed etc)
+			$status = $this->providerAccounts->getProviderAccounts();
+			if ($status === false) {
+				return $this->userSessionTimeout();
+			}
+			if (isset($status['providerAccount'])) {
+				$status = reset($status);
+			}
+					
+	        // Re-arranging the dashboard by ProviderAccountIds
+			// http://stackoverflow.com/questions/7574857/group-array-by-subarray-values
+			$dashboard_sorted = array();
 			foreach($dashboard as $key => $item)
 			{
-   				$arr[$item['providerAccountId']][$key] = $item;
+   				$dashboard_sorted[$item['providerAccountId']][$key] = $item;
 			}
-			ksort($arr, SORT_NUMERIC);
-			dd($arr);
-			*/
+			ksort($dashboard_sorted, SORT_NUMERIC);
+			
+			$dashboard = array();
+			foreach ($dashboard_sorted as $key => $accounts) {
+
+				$refreshStatus = '';
+				// Searching for the providerAccountId in 
+				$k = array_search($key, array_column($status, 'id'));
+				// fetch refresh status
+				if (array_key_exists('refreshInfo', $status[$k])) {
+					$refreshStatus = $status[$k]['refreshInfo']['status'];
+					// $status_ = $status[$k]['refreshInfo']['statusCode'];
+				}
+				
+				$accounts = array_values($accounts);
+				$dashboard[$key]['providerName'] = $accounts[0]['providerName'];
+				$dashboard[$key]['status'] = $refreshStatus;
+				$dashboard[$key]['accounts'] = $accounts;
+
+			}
+
+			// Sorting by Provider Name
+			uasort($dashboard, function($a, $b) {
+   				return strcmp($a['providerName'], $b['providerName']);
+			});
+
 
 			// Calculating Net Worth
 			$netWorth['total'] = $netWorth['assets'] - $netWorth['liabilities'];
@@ -121,28 +154,39 @@ class AccountController extends Controller
     }
 
 
-	public function removeProvider(Request $request, $providerId = null)
+	public function removeProviderAccount($providerAccountId)
     {
 	
-		if ($providerId) {
+		$res = $this->providerAccounts->deleteProviderAccounts($providerAccountId); 
 
-			$res = $this->providerAccounts->deleteProviderAccounts($providerId); 
+		if ($res === false) {
+			return $this->userSessionTimeout();
+		}
 
-			if ($res === false) {
-				return $this->userSessionTimeout();
-			}
+		if ($res) {
+			 
+			return \Redirect::to('account/status');					
 
-			if ($res) {
-				 
-				return \Redirect::to('account/status');					
-
-			}
+		}
     		
-    	} else {
+    	
+    }
 
-			return \Redirect::to('account/status');
+    public function removeAccount($providerId)
+    {
+	
+		$res = $this->account->deleteAccount($providerId); 
 
-    	}
+		if ($res === false) {
+			return $this->userSessionTimeout();
+		}
+
+		if ($res) {
+		 
+			return \Redirect::to('account/dashboard');					
+
+		}
+
     }
 
     /** 
