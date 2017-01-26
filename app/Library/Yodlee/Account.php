@@ -122,9 +122,9 @@ class Account {
 			$request = config('services.yodlee.transactions.url');
 
 			$queryArgs = array();
-			$queryArgs['accountId']=$accountId;
-			// $queryArgs['fromDate']= "2016-01-01";
-			// $queryArgs['toDate']="2016-03-01";
+			$queryArgs['accountId'] = $accountId;
+			$queryArgs['fromDate'] = "2010-01-01";
+			$queryArgs['toDate'] = Carbon::now()->toDateString();
 			
 			if(count($queryArgs) > 0) {
             	$request = $request.'?'.http_build_query($queryArgs, '', '&');

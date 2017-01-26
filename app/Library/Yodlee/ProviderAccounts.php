@@ -44,9 +44,6 @@ class ProviderAccounts {
 			
 			$responseObj = Utils::httpPost($requestUrl, $params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 			
-			// $params = json_encode($params, JSON_UNESCAPED_UNICODE);
-	        // $responseObj = Utils::httpPostCurl($requestUrl ,$params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
-
 			if ( $responseObj['httpStatus'] == '201' ) {
 
 				return $responseObj['body'];
@@ -78,7 +75,7 @@ class ProviderAccounts {
 
 	/*	
     * Update providerAccount. 
-    * Used for MFA and login retry
+    * Used for MFA and login retry (not used yet)
     * YSL URL (PUT CURL): https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/providerAccount/?providerAccountId=1234566
     * Arguments: Array with providerAccountId and Login Form / MFA form with encrypted credentials
     * Returns (on success): Array with providerAccountId (same as input), providerId, Account update status, and error codes or messages if any
@@ -138,6 +135,105 @@ class ProviderAccounts {
 				}
 							
 				return $refresh;   	
+
+			} else {
+
+				$err = array(
+					'datetime' => Carbon::now()->toDateTimeString(),
+					'ip' => \Request::ip(),
+					'userId' => Auth::user()->id, 
+					'yslUserId' => Auth::user()->yslUserId,
+					'file' => __FILE__, 
+					'method' => __FUNCTION__, 
+					'event' => 'Updating ProviderAccount', 
+					'params' => json_encode($params), 
+				);
+				$error = array_merge($err, $responseObj['error']);
+				\Log::info(print_r($error, true));
+				$msg = 'Yodlee Error ' . $error['code'].' - "'.$error['message'].'"';
+				abort(500, $msg);
+			}
+
+		} else {
+
+			return false;
+		}
+	}
+
+	/*	
+    * Refresh providerAccount. 
+    * YSL URL (PUT CURL): https://usyirestmaster.api.yodlee.com/ysl/uscnew/v1/providerAccount/?providerAccountId=1234566
+    * Arguments: Array with providerAccountId and empty Login Form
+    * Returns (on success): Array with providerAccountId (same as input), providerId, Account update status, and error codes or messages if any
+    */
+    function refreshProviderAccounts($params)
+    {
+
+    	if ( $this->yodleeUser->isActive() ) { // Checking if user is active
+		
+			$requestUrl = config('services.yodlee.providerAccounts.url');
+
+			$queryArgs = array();
+			$queryArgs['providerAccountIds'] = $params['providerAccountId'];
+		
+			if(count($queryArgs) > 0) {
+            	$requestUrl = $requestUrl.'?'.http_build_query($queryArgs, '', '&');
+			}
+
+			$params = $params['params'];
+
+			$responseObj = Utils::httpPut($requestUrl, $params, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
+
+			if ( $responseObj['httpStatus'] == '200' ) {
+
+				// NOTE: This is slightly different in that since multiple providerAccountIds 
+				// can be "refreshed", an array of providerAccountId arrays is returned.
+				$res = $responseObj['body']['providerAccount'][0];
+				
+				$refresh = array();
+				
+				$refresh['statusCode'] = '';
+				if (array_key_exists('statusCode', $res['refreshInfo'])) {
+					$refresh['statusCode'] = $res['refreshInfo']['statusCode'];
+				}
+				
+				$refresh['status'] = '';
+				if (array_key_exists('status', $res['refreshInfo'])) {
+					$refresh['status'] = $res['refreshInfo']['status'];
+				}
+
+				$refresh['statusMessage'] = '';
+				if (array_key_exists('statusMessage', $res['refreshInfo'])) {
+					$refresh['statusMessage'] = $res['refreshInfo']['statusMessage'];
+				}
+				
+				$refresh['additionalStatus'] = '';
+				if (array_key_exists('additionalStatus', $res['refreshInfo'])) {
+					$refresh['additionalStatus'] = $res['refreshInfo']['additionalStatus'];	
+				}
+				
+				$refresh['actionRequired'] = '';
+				if (array_key_exists('actionRequired', $res['refreshInfo'])) {
+					$refresh['actionRequired'] = $res['refreshInfo']['actionRequired'];
+				}
+
+				$refresh['message'] = '';
+				if (array_key_exists('message', $res['refreshInfo'])) {
+					$refresh['message'] = $res['refreshInfo']['message'];
+				}
+				
+				// Is this ever returned for this call?
+				$refresh['additionalInfo'] = '';
+				if (array_key_exists('additionalInfo', $res['refreshInfo'])) {
+					$refresh['additionalInfo'] = $res['refreshInfo']['additionalInfo'];	
+				}
+
+				$refresh['loginForm'] = '';
+				if (array_key_exists('loginForm', $res)) {
+					$refresh['loginForm'] = $res['loginForm'];
+				}
+							
+				return $refresh;
 
 			} else {
 
@@ -349,66 +445,5 @@ class ProviderAccounts {
         
         return $loginForm;
     }
-/*
-    function parseAndPopulateLoginFormForToken($refresh,$pk) {
-		Utils::logMessage("","parseAndPopulateLoginFormForToken:::>>====================::".$refresh.PHP_EOL.PHP_EOL);
-		$resObj = Utils::parseJson($refresh);
-		$loginForm = $resObj['loginForm'];
-		$providerParam = json_encode($loginForm,JSON_UNESCAPED_UNICODE);
-		echo "<<<>>>:::".$providerParam.PHP_EOL.PHP_EOL;
-		$formType = $loginForm['formType'];
-		echo PHP_EOL."formType :::".$formType.PHP_EOL;
-		
-		if(empty($formType)) {
-			echo PHP_EOL.":::Inside Else Scenario:::".PHP_EOL;
-			return null;
-		} else if($formType == 'token') {
-			echo PHP_EOL.":::Token Scenario:::".PHP_EOL;
-			$rows = $loginForm['row'];
-			$rows[0]['field'][0]['value']= '123456';
-			$loginForm['row'][0]=$rows[0];
-		} else if($formType=='questionAndAnswer') {
-			echo PHP_EOL.":::Q&A Scenario:::".PHP_EOL;
-			$rows = $loginForm['row'];
-			$rows[0]['field'][0]['value']= 'Texas';
-			$rows[1]['field'][0]['value']= 'w3schools';
-			$loginForm['row'][0]=$rows[0];
-			$loginForm['row'][1]=$rows[1];
-		} else if($formType=='image') {
-			echo PHP_EOL.":::Image Scenario:::".PHP_EOL;
-			$rows = $loginForm['row'];
-			$rows[0]['field'][0]['value']= '5678';
-			$loginForm['row'][0]=$rows[0];
-		}
-	
-		$providerParam = json_encode($loginForm,JSON_UNESCAPED_UNICODE);
-		echo "<<<>>>:::".$providerParam.PHP_EOL.PHP_EOL;
-		$resObj['loginForm'] = $loginForm;
-	    $mod_loginForm_obj = array('loginForm'=>$resObj['loginForm']);
-		//$mod_loginForm_obj_str = json_encode($mod_loginForm_obj,JSON_UNESCAPED_UNICODE);
-		//echo "<<<>>>:::".$mod_loginForm_obj_str.PHP_EOL.PHP_EOL;
-		return $mod_loginForm_obj;
-	}
-
-    public function parseAndPopulateLoginFormForQuesAns($refresh) {
-        $resObj = Utils::parseJson($refresh);
-        $loginForm = $resObj['loginForm'];
-        $providerParam = json_encode($loginForm,JSON_UNESCAPED_UNICODE);
-        echo "<<<>>>:::".$providerParam.PHP_EOL.PHP_EOL;
-        $rows = $loginForm['row'];
-        $rows[0]['field'][0]['value']= 'Texas';
-        $rows[1]['field'][0]['value']= 'w3schools';
-        $loginForm['row'][0]=$rows[0];
-        $loginForm['row'][1]=$rows[1];
-        $providerParam = json_encode($loginForm,JSON_UNESCAPED_UNICODE);
-        echo "<<<>>>:::".$providerParam.PHP_EOL.PHP_EOL;
-        $resObj['loginForm'] = $loginForm;
-          $mod_loginForm_obj = array('loginForm'=>$resObj['loginForm']);
-        //$mod_loginForm_obj_str = json_encode($mod_loginForm_obj,JSON_UNESCAPED_UNICODE);
-        //echo "<<<>>>:::".$mod_loginForm_obj_str.PHP_EOL.PHP_EOL;
-        return $mod_loginForm_obj;
-    }
-	*/
-
 
 }

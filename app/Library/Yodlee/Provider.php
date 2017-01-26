@@ -123,41 +123,4 @@ class Provider {
 			return false;
 		}
 	}
-
-    ########################
-    ##	NOT IN USE YET
-    ########################
-	public function refreshAllProviders() // NOT USED YET
-	{
-
-		$request = config('services.yodlee.refreshUrl'). '/' .$providerId;
-
-		$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
-
-		if ( $responseObj['httpStatus'] == '200' ) {
-			return $responseObj['body'];
-		} else {
-			//
-		}
-	}
-
-
-	public function refreshProvider($providerId)  // NOT CORRECT - NOT USED
-	{
-
-		// SWOOP - Clean input ($providerId)
-		$request = config('services.yodlee.refreshUrl'). '/' .$providerId;
-
-		$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
-		
-		if ( $responseObj['httpStatus'] == '200' ) {
-
-			return $responseObj['body'];
-
-		} else {
-
-			//
-
-		}
-	}
 }

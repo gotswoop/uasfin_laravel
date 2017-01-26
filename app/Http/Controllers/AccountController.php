@@ -186,6 +186,14 @@ class AccountController extends Controller
      	if ($accountSummary === false || $accountDetails === false) {
      		return $this->userSessionTimeout();
      	}
+
+	    // TODO - move later
+	    // Refreshing Account here.
+     	$field = array('login'=>'');
+		$update['params'] = $field;
+	    $update['providerAccountId'] = $accountSummary['account'][0]['providerAccountId'];
+		$res = $this->providerAccounts->refreshProviderAccounts($update);
+		// End refresh accounts
 		
 		if (isset($accountDetails['transaction'])) {
 
