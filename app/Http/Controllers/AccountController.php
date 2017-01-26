@@ -523,15 +523,23 @@ class AccountController extends Controller
     	if ($input['mfaType'] == "token") {
 
     		//TODO BOOM THIS IS NOT WORKING
+    		/*
     		$this->validate($request, [
 	        	'token' => 'required|max:255',
     		]);
+    		*/
     		$token = trim($input['token']);
         	$providerAccountUpdateForm = Utils::parseJson($input['providerAccountUpdateForm']);
         	$loginForm = $providerAccountUpdateForm['loginForm'];
         	$providerAccountId = $providerAccountUpdateForm['providerAccountId'];
         	$providerId = $providerAccountUpdateForm['providerId'];
         
+        	// TODO: Temp Solution
+    		if ( empty($token) ) {
+    			$url_ = 'account/add/'.$providerId;
+				return redirect( $url_ )->withErrors(['Invalid login/MFA credentials. Please try again.']);
+    		}
+
         	$provider_Res = $providerAccountUpdateForm['providerDetails'];
         	$providerName = $provider_Res['name'];
 
@@ -549,14 +557,22 @@ class AccountController extends Controller
 	    } else if ($input['mfaType'] == "image") {
 
     		//TODO BOOM THIS IS NOT WORKING
+    		/*
     		$this->validate($request, [
 	        	'token' => 'required|max:255',
     		]);
+    		*/
 
 	    	$token = trim($input['token']);
 	        $providerAccountUpdateForm = Utils::parseJson($input['providerAccountUpdateForm']);
 	        $providerAccountId = $providerAccountUpdateForm['providerAccountId'];
         	$providerId = $providerAccountUpdateForm['providerId'];
+
+        	// TODO: Temp Solution
+    		if ( empty($token) ) {
+    			$url_ = 'account/add/'.$providerId;
+				return redirect( $url_ )->withErrors(['Invalid login/MFA credentials. Please try again.']);
+    		}
         
 	        $provider_Res = $providerAccountUpdateForm['providerDetails'];
 	        $providerName = $provider_Res['name'];
@@ -585,7 +601,7 @@ class AccountController extends Controller
     		$providerAccountUpdateForm = Utils::parseJson($input['providerAccountUpdateForm']);
 	        $providerAccountId = $providerAccountUpdateForm['providerAccountId'];
         	$providerId = $providerAccountUpdateForm['providerId'];
-        
+          	
 	        $provider_Res = $providerAccountUpdateForm['providerDetails'];
 	        $providerName = $provider_Res['name'];
 
@@ -597,7 +613,8 @@ class AccountController extends Controller
 	        }
 
 	        $questions = $input['questions'];
-    		for ($i=0; $i < $questions; $i++){
+    		for ($i=0; $i < $questions; $i++) {
+
 				$field_1[0]['id'] = $input['q_'.$i.'_id'];
     			$field_1[0]['value'] = Utils::encryptData(trim($input['q_'.$i.'_value']), $publicKey);
     			
@@ -605,6 +622,12 @@ class AccountController extends Controller
     			$field_2['label'] = $input['q_'.$i.'_label'];
     			
     			$field[$i] = $field_2;
+
+    			// TODO: Temp Solution
+	    		if ( empty($input['q_'.$i.'_value']) ) {
+	    			$url_ = 'account/add/'.$providerId;
+					return redirect( $url_ )->withErrors(['Invalid login/MFA credentials. Please try again.']);
+	    		}
 			}
     		
     		$field = array('row'=>$field);
