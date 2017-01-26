@@ -117,8 +117,18 @@ class Account {
 	{
 		if ( $this->yodleeUser->isActive() ) { // Checking if user is active
 
-			// TODO: Clean input ($accoundId)
-			$request = config('services.yodlee.transactions.url'). '?accountId=' . $accountId;
+			// TODO: Clean input ($accoundId) see if it's valid?
+
+			$request = config('services.yodlee.transactions.url');
+
+			$queryArgs = array();
+			$queryArgs['accountId']=$accountId;
+			// $queryArgs['fromDate']= "2016-01-01";
+			// $queryArgs['toDate']="2016-03-01";
+			
+			if(count($queryArgs) > 0) {
+            	$request = $request.'?'.http_build_query($queryArgs, '', '&');
+			}
 			
 			$responseObj = Utils::httpGet($request, Auth::user()->yslCobrandSessionToken, Auth::user()->yslUserSessionToken);
 

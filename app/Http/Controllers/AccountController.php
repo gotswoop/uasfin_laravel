@@ -96,6 +96,17 @@ class AccountController extends Controller
 		   		}
 			}
 
+			$arr = array();
+
+			/*
+			foreach($dashboard as $key => $item)
+			{
+   				$arr[$item['providerAccountId']][$key] = $item;
+			}
+			ksort($arr, SORT_NUMERIC);
+			dd($arr);
+			*/
+
 			// Calculating Net Worth
 			$netWorth['total'] = $netWorth['assets'] - $netWorth['liabilities'];
 
