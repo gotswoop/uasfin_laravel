@@ -115,7 +115,7 @@ class AccountController extends Controller
 			}
 			ksort($dashboard_sorted, SORT_NUMERIC);
 			
-			$dashboard = array();
+			$dashboard = array(); $inactive_institutions = 0;
 			foreach ($dashboard_sorted as $key => $accounts) {
 
 				$refreshStatus = '';
@@ -125,13 +125,15 @@ class AccountController extends Controller
 				if (array_key_exists('refreshInfo', $status[$k])) {
 					$refreshStatus = $status[$k]['refreshInfo']['status'];
 					// $status_ = $status[$k]['refreshInfo']['statusCode'];
+					if ($refreshStatus == "FAILED") {
+						$inactive_institutions++;
+					}
 				}
 				
 				$accounts = array_values($accounts);
 				$dashboard[$key]['providerName'] = $accounts[0]['providerName'];
 				$dashboard[$key]['status'] = $refreshStatus;
 				$dashboard[$key]['accounts'] = $accounts;
-
 			}
 
 			// Sorting by Provider Name
@@ -139,9 +141,9 @@ class AccountController extends Controller
    				return strcmp($a['providerName'], $b['providerName']);
 			});
 
-
 			// Calculating Net Worth
 			$netWorth['total'] = $netWorth['assets'] - $netWorth['liabilities'];
+			$netWorth['active_institutions'] = sizeof($dashboard) - $inactive_institutions;
 
 			// Display dashboard with account data
 	        return view('account.dashboard')->with(array('accounts' => $dashboard, 'netWorth' => $netWorth));

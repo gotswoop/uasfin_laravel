@@ -21,12 +21,12 @@
 					@endif	
                 	</h4>
                 	<h5>Type: {{ $summary['accountType']}} </h5>
-                	<h5>Pending and Cleared Transactions (updated {{ \Carbon\Carbon::createFromTimeStamp(strtotime($summary['lastUpdated']))->diffForHumans() }})</h5>
+                	<h5>Pending and cleared transactions from past 60 days. </h5>
+                	<h5>Updated {{ \Carbon\Carbon::createFromTimeStamp(strtotime($summary['lastUpdated']))->diffForHumans() }}.</h5>
                 </div>
 	            <div class="panel-body">
 					<table class="table table-striped">
                     	<tr>
-                       		<th>Status</th>
                        		<th>Date</th>
                     		<th>Description</th>
                     		<th>Category</th>
@@ -35,9 +35,13 @@
                     	@if ($transactions) 
 	                    	@foreach ($transactions as $transaction)
 	                    		<tr>
-	                    		<td> {{ mb_strtolower($transaction['status']) }} </td>
 	                    		<td> {{ $transaction['date'] }} </td>
-	                    		<td> {{ $transaction['description']['original'] }} </td>
+	                    		<td> 
+	                    		@if ($transaction['status'] == "PENDING")
+								<i>({{ mb_strtolower($transaction['status']) }})</i>&nbsp;
+								@endif
+								{{ $transaction['description']['original'] }} 
+								</td>
 								<td> {{ $transaction['category'] }} </td>
 								{{--*/ $color = ($transaction['baseType'] == 'CREDIT') ? 'green' : 'red' /*--}}
 								{{--*/ $neg = ($transaction['baseType'] == 'CREDIT') ? '' : '-' /*--}}

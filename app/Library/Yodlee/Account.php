@@ -123,7 +123,8 @@ class Account {
 
 			$queryArgs = array();
 			$queryArgs['accountId'] = $accountId;
-			$queryArgs['fromDate'] = "2010-01-01";
+			// Showing last 60 days of transactions. Default is 30
+			$queryArgs['fromDate'] = Carbon::now()->subDays(60)->toDateString();
 			$queryArgs['toDate'] = Carbon::now()->toDateString();
 			
 			if(count($queryArgs) > 0) {

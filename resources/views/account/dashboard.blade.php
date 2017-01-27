@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
-<?php // dd($accounts); ?>
+<?php  //dd($netWorth); ?>
 <div class="container">
     <div class="row">
         <div class="col-md-10 col-md-offset-1">
@@ -14,7 +14,7 @@
                 		<h2 style="color:#330000;">Net Worth: <font style="color: {{ $color }} ">{{ $neg }}$ {{ number_format(abs($netWorth['total']),2) }} </font></h2>
                 		<h4>&nbsp;&nbsp;&nbsp;&nbsp;Assets: <font style="color:green">$ {{ number_format($netWorth['assets'],2) }} </font></hh5>
                 		<h4>&nbsp;&nbsp;&nbsp;&nbsp;Liabilities: <font style="color:red">- $ {{ number_format($netWorth['liabilities'],2) }} </font></h4>
-                		<h5>Add more institutions to get a better financial picture.</h5>
+                		<h5>You have <strong>{{ $netWorth['active_institutions'] }}</strong> institutions linked. Add more institutions to get a better financial picture.</h5>
 					</div>
 					<div style="float: right">
 						<div>&nbsp;</div>
