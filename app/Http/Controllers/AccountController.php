@@ -221,19 +221,25 @@ class AccountController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function details(Request $request, $id = null)
+    public function details(Request $request, $id)
     {
 
     	$container = $request->input('container');
-    	
+  
      	$accountSummary = $this->account->getSummary($id, $container);
      	$accountDetails = $this->account->getTransactions($id);
-     	
+
      	if ($accountSummary === false || $accountDetails === false) {
      		return $this->userSessionTimeout();
      	}
 
-	    // TODO - move later
+     	$summary = $accountSummary['account'][0];
+     	// clean up summary 
+     	if (!array_key_exists('accountName', $summary)) {
+
+     		$summary['accountName'] = '';
+     	}
+     	// TODO - move later
 	    // Refreshing Account here.
      	$field = array('login'=>'');
 		$update['params'] = $field;
@@ -243,11 +249,11 @@ class AccountController extends Controller
 		
 		if (isset($accountDetails['transaction'])) {
 
-	        return view('account.details')->with(array('transactions' => $accountDetails['transaction'], 'summary' => $accountSummary['account'][0], 'accountId' => $id));
+	        return view('account.details')->with(array('transactions' => $accountDetails['transaction'], 'summary' => $summary, 'accountId' => $id));
 
         } else {
 
-        	return view('account.details')->with(array('transactions' => null, 'summary' => $accountSummary['account'][0], 'accountId' => $id));
+        	return view('account.details')->with(array('transactions' => null, 'summary' => $summary, 'accountId' => $id));
 
         }
 	}
