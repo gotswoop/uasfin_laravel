@@ -83,7 +83,10 @@ class Cobrand {
     */
     public function getPublicKey() 
     {
-		
+
+		// $file = \File::get(base_path('PublicKey.txt'));
+		// dd($file);
+
 		$requestUrl = config('services.yodlee.cobrand.publicKeyUrl');
 
 		$responseObj = Utils::httpGet($requestUrl, Auth::user()->yslCobrandSessionToken);
