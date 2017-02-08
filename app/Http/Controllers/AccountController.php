@@ -119,7 +119,7 @@ class AccountController extends Controller
 			foreach ($dashboard_sorted as $key => $accounts) {
 
 				$refreshStatus = '';
-				// Searching for the providerAccountId in 
+				// Searching for the providerAccountId in status
 				$k = array_search($key, array_column($status, 'id'));
 				// fetch refresh status
 				if (array_key_exists('refreshInfo', $status[$k])) {
