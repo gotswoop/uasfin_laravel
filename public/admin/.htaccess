@@ -1,0 +1,5 @@
+AuthUserFile /var/www/.htauth
+AuthName "Restricted Area"
+AuthType Basic
+
+require user cesr
