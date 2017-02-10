@@ -35,6 +35,8 @@ class Account {
 
 			if ( $responseObj['httpStatus'] == '200' ) {
 				
+				// dd($responseObj['body']);
+
 				return $responseObj['body'];
 
 			} else {

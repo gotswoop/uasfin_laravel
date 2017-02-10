@@ -188,7 +188,8 @@ class ProviderAccounts {
 
 				// NOTE: This is slightly different in that since multiple providerAccountIds 
 				// can be "refreshed", an array of providerAccountId arrays is returned.
-				$res = $responseObj['body']['providerAccount'][0];
+				// $res = $responseObj['body']['providerAccount'][0];
+				$res = reset($responseObj['body']['providerAccount']);
 				
 				$refresh = array();
 				
@@ -222,17 +223,30 @@ class ProviderAccounts {
 					$refresh['message'] = $res['refreshInfo']['message'];
 				}
 				
-				// Is this ever returned for this call?
 				$refresh['additionalInfo'] = '';
 				if (array_key_exists('additionalInfo', $res['refreshInfo'])) {
 					$refresh['additionalInfo'] = $res['refreshInfo']['additionalInfo'];	
 				}
 
+				$refresh['lastRefreshed'] = '';
+				if (array_key_exists('lastRefreshed', $res['refreshInfo'])) {
+					$refresh['lastRefreshed'] = $res['refreshInfo']['lastRefreshed'];
+				}
+
+				$refresh['lastRefreshAttempt'] = '';
+				if (array_key_exists('lastRefreshAttempt', $res['refreshInfo'])) {
+					$refresh['lastRefreshAttempt'] = $res['refreshInfo']['lastRefreshAttempt'];
+				}
+				$refresh['lastRefreshStatusCode'] = '';
+				if (array_key_exists('lastRefreshStatusCode', $res['refreshInfo'])) {
+					$refresh['lastRefreshStatusCode'] = $res['refreshInfo']['lastRefreshStatusCode'];
+				}
+
+				// Is this ever returned for this call?
 				$refresh['loginForm'] = '';
 				if (array_key_exists('loginForm', $res)) {
 					$refresh['loginForm'] = $res['loginForm'];
 				}
-							
 				return $refresh;
 
 			} else {
