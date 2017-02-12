@@ -13,7 +13,7 @@ class UserAccountTransactions extends Migration
     public function up()
     {
         Schema::create('user_account_transactions', function (Blueprint $table) {
-        	$table->increments('id');
+			$table->increments('id');
 	        $table->integer('userId');
 	        $table->integer('providerId');
 			$table->string('providerName');
@@ -22,9 +22,9 @@ class UserAccountTransactions extends Migration
 			$table->integer('transactionId');
 			$table->string('accountName')->nullable();
 			$table->char('accountType', 100)->nullable();
-			$table->char('container', 25)->nullable();
+			$table->char('container', 50)->nullable();
 			$table->char('accountStatus', 100)->nullable();
-			$table->boolean('isAsset')->nullable()->nullable();
+			$table->boolean('isAsset')->nullable();
 			$table->decimal('balance_amount', 19, 4)->nullable();
 			$table->char('balance_currency', 4)->nullable();
 			$table->decimal('balance_daily_amount', 19, 4)->nullable();
@@ -55,26 +55,26 @@ class UserAccountTransactions extends Migration
 			$table->decimal('netWorth_total', 19, 4)->nullable();
 			$table->char('createdDate', 25)->nullable();
 			$table->integer('refresh_statusCode')->nullable();
-			$table->char('refresh_statusMessage',25)->nullable();
+			$table->string('refresh_statusMessage')->nullable();
 			$table->char('refresh_lastRefreshed', 25)->nullable();
 			$table->char('refresh_lastRefreshAttempt', 25)->nullable();
 			$table->char('refresh_nextRefreshScheduled', 25)->nullable();
-			$table->char('trans_baseType', 10)->nullable();
+			$table->char('trans_baseType', 25)->nullable();
 			$table->decimal('trans_amount', 19, 4)->nullable();
 			$table->char('trans_currency', 4)->nullable();
-			$table->char('trans_categoryType', 50)->nullable();
+			$table->char('trans_categoryType', 100)->nullable();
 			$table->integer('trans_categoryId')->nullable();
 			$table->string('trans_category')->nullable();
-			$table->char('trans_categorySource', 25)->nullable();
+			$table->string('trans_categorySource')->nullable();
 			$table->string('trans_description_original')->nullable();
 			$table->string('trans_description_simple')->nullable();
 			$table->string('trans_type')->nullable();
 			$table->decimal('trans_principal_amount', 19, 4)->nullable();
 			$table->char('trans_principal_currency', 4)->nullable();
-			$table->dateTime('trans_date')->nullable()->nullable();
+			$table->dateTime('trans_date')->nullable();
 			$table->dateTime('trans_transactionDate')->nullable();
-			$table->dateTime('trans_postDate')->nullable()->nullable();
-			$table->char('trans_status', 20)->nullable();
+			$table->dateTime('trans_postDate')->nullable();
+			$table->char('trans_status', 25)->nullable();
 			$table->integer('trans_merchant_id')->nullable();
 			$table->string('trans_merchant_name')->nullable();
 			$table->integer('trans_highLevelCategoryId')->nullable();

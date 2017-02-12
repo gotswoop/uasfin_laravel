@@ -21,9 +21,9 @@ class UserAccountHistory extends Migration
 			$table->integer('accountId');
 			$table->string('accountName')->nullable();
 			$table->char('accountType', 100)->nullable();
-			$table->char('container', 25)->nullable();
+			$table->char('container', 50)->nullable();
 			$table->char('accountStatus', 100)->nullable();
-			$table->boolean('isAsset')->nullable()->nullable();
+			$table->boolean('isAsset')->nullable();
 			$table->decimal('balance_amount', 19, 4)->nullable();
 			$table->char('balance_currency', 4)->nullable();
 			$table->char('lastUpdated', 25)->nullable();
@@ -50,7 +50,7 @@ class UserAccountHistory extends Migration
 			$table->decimal('netWorth_total', 19, 4)->nullable();
 			$table->char('createdDate', 25)->nullable();
 			$table->integer('refresh_statusCode')->nullable();
-			$table->char('refresh_statusMessage',25)->nullable();
+			$table->string('refresh_statusMessage')->nullable();
 			$table->char('refresh_lastRefreshed', 25)->nullable();
 			$table->char('refresh_lastRefreshAttempt', 25)->nullable();
 			$table->char('refresh_nextRefreshScheduled', 25)->nullable();
