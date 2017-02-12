@@ -41,6 +41,8 @@ Route::group(['middleware' => 'web'], function () {
 
     Route::get('/account/dashboard', 'AccountController@dashboard');
 
+    Route::get('/account/manag3r', 'AccountController@manage');
+
 	Route::get('/account/link', 'AccountController@link');
 
 	Route::get('/account/search', 'AccountController@searchAccountGET');
@@ -49,7 +51,7 @@ Route::group(['middleware' => 'web'], function () {
 	Route::get('/account/status', 'AccountController@checkStatus');
 
 	Route::get('/account/removeProviderAccount/{id}', 'AccountController@removeProviderAccount');
-	Route::get('/account/removeAccount/{id}', 'AccountController@removeAccount');
+	Route::get('/account/removeAccount/{providerAccountId}/{accountId}', 'AccountController@removeAccount');
 
 	Route::get('/account/add/{id}', 'AccountController@addAccountGET');
 	Route::post('/account/add/{id}', 'AccountController@addAccountPOST');

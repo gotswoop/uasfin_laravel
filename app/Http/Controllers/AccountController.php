@@ -155,6 +155,118 @@ class AccountController extends Controller
         }
     }
 
+    /**
+     * Show the account dashboard for user
+     *
+     * @return \Illuminate\Http\Response
+     */
+    public function manage()
+    {
+	
+		// Fetching all accounts for the user
+		$accounts = $this->account->getAllAccounts();
+
+		if ($accounts === false) {
+			return $this->userSessionTimeout();
+		}
+		
+		if (array_key_exists('account', $accounts)) { // populating data for dashboard if user has accounts.
+		        	
+        	// $netWorth = $this->account->getNetWorth(); // Not used
+        	$i=0;
+        	$netWorth['total'] = 0;
+			$netWorth['assets'] = 0;
+			$netWorth['liabilities'] = 0;
+			
+			// Calculating the total assets and liabilities
+
+			foreach ($accounts['account'] as $account) {
+		   		
+		   		if (array_key_exists('balance', $account)) { // Only look for accounts that have a balance		   		
+		   			if ($account['isAsset']) {
+						$netWorth['assets'] = $netWorth['assets'] + $account['balance']['amount'];
+					} else {
+						$netWorth['liabilities'] = $netWorth['liabilities'] + $account['balance']['amount'];
+					}
+
+					$dashboard[$i]['id'] = $account['id'];
+					$dashboard[$i]['providerName'] = $account['providerName'];
+					$dashboard[$i]['accountName'] = ' - ';
+					if (array_key_exists('accountName', $account)) {
+						$dashboard[$i]['accountName'] = $account['accountName'];
+					}
+					$dashboard[$i]['accountType'] = ' - ';
+					if (array_key_exists('accountType', $account)) {
+						$dashboard[$i]['accountType'] = $account['accountType'];
+					}
+					$dashboard[$i]['isAsset'] = $account['isAsset'];
+					$dashboard[$i]['balanceAmount'] = $account['balance']['amount'];
+					$dashboard[$i]['balanceCurrency'] = $account['balance']['currency'];
+					$dashboard[$i]['CONTAINER'] = $account['CONTAINER'];
+					$dashboard[$i]['providerAccountId'] = $account['providerAccountId'];
+					$dashboard[$i]['lastUpdated'] = $account['lastUpdated'];
+					$i++;
+		   		}
+			}
+
+			// get providerAccounts (Status of all accounts, added, failed etc)
+			$status = $this->providerAccounts->getProviderAccounts();
+			if ($status === false) {
+				return $this->userSessionTimeout();
+			}
+			if (isset($status['providerAccount'])) {
+				$status = reset($status);
+			}
+					
+	        // Re-arranging the dashboard by ProviderAccountIds
+			// http://stackoverflow.com/questions/7574857/group-array-by-subarray-values
+			$dashboard_sorted = array();
+			foreach($dashboard as $key => $item)
+			{
+   				$dashboard_sorted[$item['providerAccountId']][$key] = $item;
+			}
+			ksort($dashboard_sorted, SORT_NUMERIC);
+			
+			$dashboard = array(); $inactive_institutions = 0;
+			foreach ($dashboard_sorted as $key => $accounts) {
+
+				$refreshStatus = '';
+				// Searching for the providerAccountId in status
+				$k = array_search($key, array_column($status, 'id'));
+				// fetch refresh status
+				if (array_key_exists('refreshInfo', $status[$k])) {
+					$refreshStatus = $status[$k]['refreshInfo']['status'];
+					// $status_ = $status[$k]['refreshInfo']['statusCode'];
+					if ($refreshStatus == "FAILED") {
+						$inactive_institutions++;
+					}
+				}
+				
+				$accounts = array_values($accounts);
+				$dashboard[$key]['providerName'] = $accounts[0]['providerName'];
+				$dashboard[$key]['status'] = $refreshStatus;
+				$dashboard[$key]['accounts'] = $accounts;
+			}
+
+			// Sorting by Provider Name
+			uasort($dashboard, function($a, $b) {
+   				return strcmp($a['providerName'], $b['providerName']);
+			});
+
+			// Calculating Net Worth
+			$netWorth['total'] = $netWorth['assets'] - $netWorth['liabilities'];
+			$netWorth['active_institutions'] = sizeof($dashboard) - $inactive_institutions;
+
+			// Display dashboard with account data
+	        return view('account.manage')->with(array('accounts' => $dashboard, 'netWorth' => $netWorth));
+
+        } else { // Showing empty dashboard
+
+        	return view('account.dashboard_empty');
+
+        }
+    }
+
 
 	public function removeProviderAccount($providerAccountId)
     {
@@ -167,25 +279,47 @@ class AccountController extends Controller
 
 		if ($res) {
 			 
-			return \Redirect::to('account/status');					
+			// Logging action to user_account_activity
+    		DB::table('user_account_activity')->insert([
+	    		'userId' => Auth::user()->id, 
+	    		'yslUserId' => Auth::user()->yslUserId, 
+	    		'ip' => \Request::ip(), 
+	    		'providerAccountId' => $providerAccountId, 
+	    		'accountId' => null,
+	    		'action' => 'DELETE',
+	    		'action_details' => 'DELETED_PROVIDER_ACCOUNT_ID'
+	    	]);
+ 
+			return \Redirect::to('account/status')->with('status', 'Account deleted successfully.');			
 
 		}
     		
     	
     }
 
-    public function removeAccount($providerId)
+    public function removeAccount($providerAccountId, $accountId)
     {
 	
-		$res = $this->account->deleteAccount($providerId); 
+		$res = $this->account->deleteAccount($accountId); 
 
 		if ($res === false) {
 			return $this->userSessionTimeout();
 		}
 
 		if ($res) {
+
+			// Logging action to user_account_activity
+    		DB::table('user_account_activity')->insert([
+	    		'userId' => Auth::user()->id, 
+	    		'yslUserId' => Auth::user()->yslUserId, 
+	    		'ip' => \Request::ip(), 
+	    		'providerAccountId' => $providerAccountId, 
+	    		'accountId' => $accountId, 
+	    		'action' => 'DELETE',
+	    		'action_details' => 'DELETED_ACCOUNT_ID'
+	    	]);
 		 
-			return \Redirect::to('account/dashboard');					
+			return \Redirect::to('account/dashboard')->with('status', 'Account deleted successfully.');				
 
 		}
 
