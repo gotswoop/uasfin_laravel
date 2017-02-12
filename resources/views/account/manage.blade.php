@@ -52,7 +52,7 @@
 				       		
 				       		<tr>
                     		<td> {{ $i }}{{ $j++ }}. </td>
-                    		<td style="font-weight: bold"><a href="/account/details/{{ $account['id'] }}/?container={{ $account['CONTAINER'] }}">{{ $providerName }}</a> : {{ $account['providerAccountId'].'  '.$account['id'] }}
+                    		<td style="font-weight: bold"><a href="/account/details/{{ $account['id'] }}/?container={{ $account['CONTAINER'] }}">{{ $providerName }}</a> : {{ $account['providerAccountId'].'-'.$account['id'] }}
                     		@if ( $status == 'FAILED')
                     			&nbsp; <a href="#" class="text-danger">INACTIVE</a>
                     		@endif

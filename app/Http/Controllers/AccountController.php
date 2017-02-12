@@ -290,7 +290,7 @@ class AccountController extends Controller
 	    		'action_details' => 'DELETED_PROVIDER_ACCOUNT_ID'
 	    	]);
  
-			return \Redirect::to('account/status')->with('status', 'Account deleted successfully.');			
+			return \Redirect::to('account/manag3r')->with('status', 'Account deleted successfully.');			
 
 		}
     		
@@ -319,7 +319,7 @@ class AccountController extends Controller
 	    		'action_details' => 'DELETED_ACCOUNT_ID'
 	    	]);
 		 
-			return \Redirect::to('account/dashboard')->with('status', 'Account deleted successfully.');				
+			return \Redirect::to('account/manag3r')->with('status', 'Account deleted successfully.');				
 
 		}
 
