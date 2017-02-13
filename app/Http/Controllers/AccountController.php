@@ -282,7 +282,7 @@ class AccountController extends Controller
 			// Logging action to user_account_activity
 			$this->log_user_account_activity('DELETE', 'DELETED_PROVIDER_ACCOUNT_ID', $providerAccountId, null, null);
     		
-			return \Redirect::to('account/manag3r')->with('status', 'Account deleted successfully.');			
+			return \Redirect::to('account/status')->with('status', 'Account deleted successfully.');			
 		}
     }
 
