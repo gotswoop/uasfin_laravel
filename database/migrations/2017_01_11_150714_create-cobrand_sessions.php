@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class Cobrand extends Migration
+class CreateCobrandSessions extends Migration
 {
     /**
      * Run the migrations.
@@ -12,7 +12,7 @@ class Cobrand extends Migration
      */
     public function up()
     {
-        Schema::create('cobrand', function (Blueprint $table) {
+        Schema::create('cobrand_sessions', function (Blueprint $table) {
         	$table->increments('id');
         	$table->integer('cobrandId');
             $table->string('applicationId', 255);
@@ -28,6 +28,6 @@ class Cobrand extends Migration
      */
     public function down()
     {
-        Schema::drop('cobrand');
+        Schema::drop('cobrand_sessions');
     }
 }

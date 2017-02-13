@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class ProviderLog extends Migration
+class CreateProviderLog extends Migration
 {
     /**
      * Run the migrations.

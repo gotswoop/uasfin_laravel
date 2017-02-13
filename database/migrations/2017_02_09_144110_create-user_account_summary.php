@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class UserAccountSummary extends Migration
+class CreateUserAccountSummary extends Migration
 {
     /**
      * Run the migrations.

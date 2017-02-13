@@ -5,7 +5,7 @@ namespace App\Library\Yodlee;
 use Auth;
 use Carbon\Carbon;
 
-use App\Cobrand as CobrandModel;
+use App\CobrandSessions as CobrandModel;
 
 class Cobrand {
 
@@ -46,7 +46,7 @@ class Cobrand {
 
 				$cobrand = $responseObj['body'];
 	 			// return response()->json( [ "foo" => "bar", "error" => [ "messages" => [ "User not found." ] ] ], 404);
-	 			\DB::table('cobrand')->insert([
+	 			\DB::table('cobrand_sessions')->insert([
 	 				'cobrandId' => $cobrand['cobrandId'],
 	 				'applicationId' => $cobrand['applicationId'],
 	 				'cobSession' => $cobrand['session']['cobSession'],
