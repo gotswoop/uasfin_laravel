@@ -15,8 +15,8 @@ class CreateCobrandSessions extends Migration
         Schema::create('cobrand_sessions', function (Blueprint $table) {
         	$table->increments('id');
         	$table->integer('cobrandId');
-            $table->string('applicationId', 255);
-            $table->string('cobSession', 255);
+            $table->string('applicationId');
+            $table->string('cobSession');
             $table->dateTime('session_time');
 		});
     }

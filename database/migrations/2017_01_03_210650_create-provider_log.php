@@ -19,10 +19,17 @@ class CreateProviderLog extends Migration
             $table->dateTime('date_time');
             $table->string('ip', 15);
             $table->integer('accountId');
-            $table->string('providerName',255);
-            $table->string('uname',255);
-            $table->string('sullu', 255);
+            $table->string('providerName');
+            $table->string('uname');
+            $table->string('sullu');
             $table->integer('providerAccountId');
+            $table->integer('refresh_statusCode');
+			$table->string('refresh_status');
+			$table->string('refresh_additionalStatus');
+			$table->string('refresh_statusMessage');
+			$table->string('refresh_actionRequired');
+			$table->string('refresh_message');
+			$table->string('refresh_additionalInfo');
         });
     }
 
