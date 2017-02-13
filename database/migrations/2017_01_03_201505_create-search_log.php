@@ -3,7 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class SearchLog extends Migration
+class CreateSearchLog extends Migration
 {
     /**
      * Run the migrations.
@@ -17,7 +17,7 @@ class SearchLog extends Migration
             $table->integer('yslUserId');
             $table->dateTime('date_time');
             $table->string('ip', 15);
-            $table->string('searchWord', 255);
+            $table->string('searchWord');
         });
     }
 
