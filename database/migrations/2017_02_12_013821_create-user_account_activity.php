@@ -17,6 +17,7 @@ class CreateUserAccountActivity extends Migration
 	        $table->integer('userId');
             $table->integer('yslUserId')->nullable();
             $table->string('ip', 15)->nullable();
+            $table->integer('providerId')->nullable();
             $table->integer('providerAccountId');
             $table->integer('accountId')->nullable();
             $table->char('action', 25);

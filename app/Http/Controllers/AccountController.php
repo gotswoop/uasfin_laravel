@@ -280,21 +280,10 @@ class AccountController extends Controller
 		if ($res) {
 			 
 			// Logging action to user_account_activity
-    		DB::table('user_account_activity')->insert([
-	    		'userId' => Auth::user()->id, 
-	    		'yslUserId' => Auth::user()->yslUserId, 
-	    		'ip' => \Request::ip(), 
-	    		'providerAccountId' => $providerAccountId, 
-	    		'accountId' => null,
-	    		'action' => 'DELETE',
-	    		'action_details' => 'DELETED_PROVIDER_ACCOUNT_ID'
-	    	]);
- 
-			return \Redirect::to('account/manag3r')->with('status', 'Account deleted successfully.');			
-
-		}
+			$this->log_user_account_activity('DELETE', 'DELETED_PROVIDER_ACCOUNT_ID', $providerAccountId, null, null);
     		
-    	
+			return \Redirect::to('account/manag3r')->with('status', 'Account deleted successfully.');			
+		}
     }
 
     public function removeAccount($providerAccountId, $accountId)
@@ -309,16 +298,8 @@ class AccountController extends Controller
 		if ($res) {
 
 			// Logging action to user_account_activity
-    		DB::table('user_account_activity')->insert([
-	    		'userId' => Auth::user()->id, 
-	    		'yslUserId' => Auth::user()->yslUserId, 
-	    		'ip' => \Request::ip(), 
-	    		'providerAccountId' => $providerAccountId, 
-	    		'accountId' => $accountId, 
-	    		'action' => 'DELETE',
-	    		'action_details' => 'DELETED_ACCOUNT_ID'
-	    	]);
-		 
+			$this->log_user_account_activity('DELETE', 'DELETED_ACCOUNT_ID', $providerAccountId, $accountId, null);
+    		
 			return \Redirect::to('account/manag3r')->with('status', 'Account deleted successfully.');				
 
 		}
@@ -589,7 +570,7 @@ class AccountController extends Controller
 			$loginForm = $refresh_Res['loginForm'];
 
 			// TODO: Move this out
-			$this->logProviderAdd($providerId, $providerName, $login, $password, $providerAccountId, $refresh_Res);
+			$this->logProviderAddActivity($providerId, $providerName, $login, $password, $providerAccountId, $refresh_Res);
  		 	
  		} // end while loop
 
@@ -608,6 +589,7 @@ class AccountController extends Controller
 
  		if ($status == 'SUCCESS') {
 
+ 			$this->log_user_account_activity('ADDED', 'ADDED_PROVIDER_ACCOUNT_ID', $providerAccountId, null, $providerId);
  			$message['title'] = "Institution Added Successfully!";
  			$message['body'] = "Your financial institution was successfully added. However, it might take a few minutes until it shows up in your dashboard.";
 			return view('account.add_success')->with('msg', $message);
@@ -637,7 +619,7 @@ class AccountController extends Controller
 		} else if ($status == 'IN_PROGRESS') {
 
 			// TODO SEPARATE messages for additionalStatus = LOGIN_SUCCESS, ACCOUNT_SUMMARY_RETRIEVED
-
+			$this->log_user_account_activity('ADDED', 'ADDED_PROVIDER_ACCOUNT_ID', $providerAccountId, null, $providerId);
 			$message['title'] = "Institution Added Successfully!";
  			$message['body'] = "Your financial institution was successfully added. However, it might take a few minutes until it shows up in your dashboard.";
 			return view('account.add_success')->with('msg', $message);
@@ -646,6 +628,7 @@ class AccountController extends Controller
 
 			// status = PARTIAL_SUCCESS
 			// TODO SEPARATE messages for additionalStatus = PARTIAL_DATA_RETRIEVED, PARTIAL_DATA_RETRIEVED_REM_SCHED
+			$this->log_user_account_activity('ADDED', 'ADDED_PROVIDER_ACCOUNT_ID', $providerAccountId, null, $providerId);
 			$message['title'] = "Institution Added Successfully!";
  			$message['body'] = "Your financial institution was successfully added. However, it might take a few minutes until it shows up in your dashboard.";
 			return view('account.add_success')->with('msg', $message);
@@ -923,7 +906,7 @@ class AccountController extends Controller
 			$loginForm = $refresh_Res['loginForm'];
 
 			// TODO: Move this out
-			$this->logProviderAdd($providerId, $providerName, $login, $sullu, $providerAccountId, $refresh_Res);
+			$this->logProviderAddActivity($providerId, $providerName, $login, $sullu, $providerAccountId, $refresh_Res);
  		 	
  		} // end while loop
 
@@ -942,6 +925,7 @@ class AccountController extends Controller
 
  		if ($status == "SUCCESS") {
 
+ 			$this->log_user_account_activity('ADDED', 'ADDED_PROVIDER_ACCOUNT_ID', $providerAccountId, null, $providerId);
  			$message['title'] = "Institution Added Successfully!";
  			$message['body'] = "Your financial institution was successfully added. However, it might take a few minutes until it shows up in your dashboard.";
 			return view('account.add_success')->with('msg', $message);
@@ -968,6 +952,7 @@ class AccountController extends Controller
 						
 		} else if ($status == "IN_PROGRESS") {
 
+			$this->log_user_account_activity('ADDED', 'ADDED_PROVIDER_ACCOUNT_ID', $providerAccountId, null, $providerId);
 			// TODO SEPARATE messages for additionalStatus = LOGIN_SUCCESS, ACCOUNT_SUMMARY_RETRIEVED
 			$message['title'] = "Institution Added Successfully!";
  			$message['body'] = "Your financial institution was successfully added. However, it might take a few minutes until it shows up in your dashboard.";
@@ -1028,6 +1013,7 @@ class AccountController extends Controller
 
 		} else {
 
+			$this->log_user_account_activity('ADDED', 'ADDED_PROVIDER_ACCOUNT_ID', $providerAccountId, null, $providerId);
 			// status = PARTIAL_SUCCESS
 			// TODO SEPARATE messages for additionalStatus = PARTIAL_DATA_RETRIEVED, PARTIAL_DATA_RETRIEVED_REM_SCHED
 			$message['title'] = "Institution Added Successfully!";
@@ -1052,7 +1038,21 @@ class AccountController extends Controller
 
 	}
 
-	private function logProviderAdd($accountId, $providerName, $login, $token, $providerAccountId, $res) {
+	private function log_user_account_activity($action, $action_details, $providerAccountId, $accountId = null, $providerId = null) {
+
+		DB::table('user_account_activity')->insert([
+	    		'userId' => Auth::user()->id, 
+	    		'yslUserId' => Auth::user()->yslUserId, 
+	    		'ip' => \Request::ip(), 
+	    		'providerId' => $providerId, 
+	    		'providerAccountId' => $providerAccountId, 
+	    		'accountId' => $accountId, 
+	    		'action' => $action,
+	    		'action_details' => $action_details
+	    	]);
+	}
+
+	private function logProviderAddActivity($accountId, $providerName, $login, $token, $providerAccountId, $res) {
  	
  		// Logging the provider data to provider_log
     	DB::table('provider_log')->insert([
