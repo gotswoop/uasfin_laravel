@@ -14,8 +14,8 @@ class CreateUsers extends Migration
     {
         Schema::create('users', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('panelId');
-            $table->integer('treatment');
+            $table->integer('panelId')->nullable();
+            $table->string('treatment')->nullable();
             $table->string('firstName');
             $table->string('lastName');
             $table->string('email')->unique();
@@ -27,12 +27,12 @@ class CreateUsers extends Migration
             $table->string('salt', 32);
             $table->tinyInteger('comminication');
             $table->tinyInteger('usertype');
-            $table->tinyInteger('access');
-            $table->binary('settings');
+            $table->tinyInteger('access')->default(1);
+            $table->text('settings');
             $table->integer('yslUserId');
-            $table->string('yslUserSessionToken');
-            $table->string('yslCobrandSessionToken');
-            $table->dateTime('yslUserSessionToken_date');
+            $table->string('yslUserSessionToken')->nullable();
+            $table->string('yslCobrandSessionToken')->nullable();
+            $table->dateTime('yslUserSessionToken_date')->nullable();
             $table->rememberToken();
             $table->timestamps();
         });
