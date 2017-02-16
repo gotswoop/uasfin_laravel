@@ -276,7 +276,7 @@ class ProviderAccounts {
 	/**
 	 * Get all the provider accounts added by the user. 
 	 * This includes the failed and successfully added provider accounts. 
-	 * GET /{cobrandName}/v1/providers/providerAccounts
+	 * GET /{cobrandName}/v1/providerAccounts
 	 * Displayed on /account/status page
 	 */
 	public function getProviderAccounts() 
